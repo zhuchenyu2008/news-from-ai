@@ -1,0 +1,176 @@
+/* 1. Basic Reset/Normalize */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 2. General Body Styling */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 3. Light Theme */
+body.theme-light {
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+body.theme-light a {
+    color: #0066cc;
+}
+
+body.theme-light a:hover {
+    color: #004499;
+}
+
+/* 4. Dark Theme */
+body.theme-dark {
+    background-color: #222; /* Slightly darker than #333 for more contrast with item bg */
+    color: #f4f4f4;
+}
+
+body.theme-dark a {
+    color: #64b5f6; /* Light blue for links */
+}
+
+body.theme-dark a:hover {
+    color: #90caf9;
+}
+
+/* 5. Layout Styling */
+header, footer {
+    padding: 1em 1.5em;
+    text-align: center;
+}
+
+header {
+    border-bottom: 1px solid #ddd; /* Light theme border */
+    margin-bottom: 1.5em;
+}
+body.theme-dark header {
+    border-bottom: 1px solid #444; /* Dark theme border */
+}
+header h1 {
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+main#news-container {
+    max-width: 850px; /* Slightly wider */
+    margin: 0 auto 2em auto; /* 0 top margin as header has margin-bottom */
+    padding: 0 1em;
+}
+
+footer {
+    border-top: 1px solid #ddd; /* Light theme border */
+    margin-top: 2em;
+    padding-top: 1em;
+    font-size: 0.9em;
+    color: #555;
+}
+body.theme-dark footer {
+    border-top: 1px solid #444; /* Dark theme border */
+    color: #aaa;
+}
+
+/* 6. News Item Styling (Generic) */
+/* Applied to direct children of #news-container, assuming they are the news items */
+#news-container > div,
+#news-container > article,
+#news-container > section /* Adding section as a possibility */ {
+    padding: 1.5em;
+    margin-bottom: 1.5em;
+    border-radius: 8px;
+    opacity: 0; /* Initial state for animation */
+    animation: fadeIn 0.5s ease-out forwards;
+    /* Specific theme styles for items are below */
+}
+
+/* News item styles for Light Theme */
+body.theme-light #news-container > div,
+body.theme-light #news-container > article,
+body.theme-light #news-container > section {
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+}
+
+/* News item styles for Dark Theme */
+body.theme-dark #news-container > div,
+body.theme-dark #news-container > article,
+body.theme-dark #news-container > section {
+    background-color: #333; /* Darker item background */
+    color: #e9ecef;
+    border: 1px solid #484848;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+/* Styling for common elements within news items (generic) */
+#news-container h2, #news-container h3, #news-container h4 {
+    margin-bottom: 0.5em;
+}
+body.theme-light #news-container h2, body.theme-light #news-container h3 { color: #111; }
+body.theme-dark #news-container h2, body.theme-dark #news-container h3 { color: #f0f0f0; }
+
+
+#news-container p {
+    margin-bottom: 1em;
+    line-height: 1.7;
+}
+#news-container p:last-child {
+    margin-bottom: 0;
+}
+
+#news-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Message for no news */
+#news-container > p { /* Style the 'No news available' message */
+    padding: 2em;
+    text-align: center;
+    background-color: transparent; /* Ensure it doesn't pick up item styling */
+    box-shadow: none;
+    border: none;
+    animation: none; /* No fade-in for this message */
+    opacity: 1;
+}
+body.theme-light #news-container > p { color: #555; }
+body.theme-dark #news-container > p { color: #aaa; }
+
+
+/* Error messages from index.php */
+.error-message {
+    color: #d9534f; /* Bootstrap danger color */
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    padding: 10px;
+    margin-bottom: 1em;
+    border-radius: 4px;
+}
+body.theme-dark .error-message {
+    color: #f4b8b6;
+    background-color: #5d3737;
+    border-color: #774c4c;
+}
+
+
+/* 7. Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px); /* Start slightly lower */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
