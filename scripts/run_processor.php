@@ -1,6 +1,6 @@
 <?php
 
-echo "Starting News Processor...\n";
+echo "开始新闻处理器...\n"; // Translated
 
 // Define project root for easier path management
 define('PROJECT_ROOT', dirname(__DIR__));
@@ -11,13 +11,13 @@ $aiHelperPath = PROJECT_ROOT . '/src/AIHelper.php';
 $newsProcessorPath = PROJECT_ROOT . '/src/NewsProcessor.php';
 
 if (!file_exists($configPath)) {
-    die("Error: Configuration file not found at {$configPath}\n");
+    die("错误：配置文件未找到于 {$configPath}\n");
 }
 if (!file_exists($aiHelperPath)) {
-    die("Error: AIHelper class file not found at {$aiHelperPath}\n");
+    die("错误：AIHelper 类文件未找到于 {$aiHelperPath}\n");
 }
 if (!file_exists($newsProcessorPath)) {
-    die("Error: NewsProcessor class file not found at {$newsProcessorPath}\n");
+    die("错误：NewsProcessor 类文件未找到于 {$newsProcessorPath}\n");
 }
 
 $config = require $configPath;
@@ -27,9 +27,13 @@ require_once $newsProcessorPath;
 // 2. Load Configuration
 $apiKey = $config['api_key'] ?? null;
 $apiEndpoint = $config['api_endpoint'] ?? null;
+$systemPromptHtml = $config['system_prompt_html'] ?? null;
 
 if (!$apiKey || !$apiEndpoint) {
-    die("Error: API key or endpoint not configured in config.php.\n");
+    die("错误：API密钥或端点未在 config.php 中配置。\n");
+}
+if (!$systemPromptHtml) {
+    die("错误：用于HTML生成的系统提示 ('system_prompt_html') 未在 config.php 中配置。\n");
 }
 
 // Define data directories
@@ -40,24 +44,24 @@ $htmlOutputDir = PROJECT_ROOT . '/data/news_html/';
 try {
     $aiHelper = new AIHelper($apiKey, $apiEndpoint);
 } catch (Exception $e) {
-    die("Error initializing AIHelper: " . $e->getMessage() . "\n");
+    die("错误：初始化 AIHelper 失败：" . $e->getMessage() . "\n");
 }
 
 // 4. Initialize NewsProcessor
 // The NewsProcessor constructor handles creation of htmlOutputDir if it doesn't exist.
 try {
-    $newsProcessor = new NewsProcessor($aiHelper, $rawNewsDir, $htmlOutputDir);
+    $newsProcessor = new NewsProcessor($aiHelper, $rawNewsDir, $htmlOutputDir, $systemPromptHtml);
 } catch (Exception $e) {
-    die("Error initializing NewsProcessor: " . $e->getMessage() . "\n");
+    die("错误：初始化 NewsProcessor 失败：" . $e->getMessage() . "\n");
 }
 
 // 5. Call processNews()
-echo "Running NewsProcessor...\n";
+echo "运行 NewsProcessor...\n"; // Translated
 try {
     $newsProcessor->processNews();
 } catch (Exception $e) {
-    error_log("Exception during NewsProcessor->processNews(): " . $e->getMessage());
-    echo "An error occurred during news processing. Check logs.\n";
+    error_log("NewsProcessor->processNews() 执行期间发生异常：" . $e->getMessage()); // Translated
+    echo "新闻处理过程中发生错误。请检查日志。\n"; // Translated
 }
 
-echo "News Processor finished.\n";
+echo "新闻处理器已完成。\n"; // Translated

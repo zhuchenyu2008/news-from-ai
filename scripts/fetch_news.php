@@ -10,11 +10,11 @@ $apiEndpoint = $config['api_endpoint'] ?? null;
 $userPrompts = $config['user_prompts'] ?? [];
 
 if (!$apiKey || !$apiEndpoint) {
-    die("Error: API key or endpoint not configured.\n");
+    die("错误：API密钥或端点未配置。\n");
 }
 
 if (empty($userPrompts)) {
-    die("Error: No user prompts configured.\n");
+    die("错误：未配置用户提示。\n");
 }
 
 // 3. Initialize AIHelper
@@ -26,13 +26,13 @@ $rawNewsDir = __DIR__ . '/../data/news_raw/';
 // Ensure the raw news directory exists
 if (!is_dir($rawNewsDir)) {
     if (!mkdir($rawNewsDir, 0777, true) && !is_dir($rawNewsDir)) {
-        die(sprintf('Error: Failed to create directory "%s".%s', $rawNewsDir, "\n"));
+        die(sprintf('错误：创建目录 "%s" 失败。%s', $rawNewsDir, "\n"));
     }
-    echo "Created directory: " . $rawNewsDir . "\n";
+    echo "成功创建目录：" . $rawNewsDir . "\n";
 }
 
 foreach ($userPrompts as $index => $prompt) {
-    echo "Fetching news for prompt: \"{$prompt}\"\n";
+    echo "正在为提示获取新闻：\"{$prompt}\"\n";
 
     $messages = [
         ['role' => 'user', 'content' => $prompt]
@@ -41,8 +41,14 @@ foreach ($userPrompts as $index => $prompt) {
     $newsContent = $aiHelper->sendPrompt($messages);
 
     if ($newsContent === false) {
-        error_log("Error fetching news for prompt \"{$prompt}\": AIHelper returned false.");
-        echo "Failed to fetch news for prompt: \"{$prompt}\". Check error log.\n";
+        error_log("为提示 \"{$prompt}\" 获取新闻时出错：AIHelper 返回 false。");
+        echo "为提示 \"{$prompt}\" 获取新闻失败。请检查错误日志。\n";
+        continue;
+    }
+
+    if (empty(trim($newsContent))) {
+        error_log("AI 未返回提示 \"{$prompt}\" 的内容。");
+        echo "AI 未返回提示 \"{$prompt}\" 的内容。\n";
         continue;
     }
 
@@ -52,13 +58,13 @@ foreach ($userPrompts as $index => $prompt) {
 
     // Store the raw text response
     if (file_put_contents($filename, $newsContent)) {
-        echo "Successfully fetched and stored news for prompt \"{$prompt}\" in {$filename}\n";
+        echo "已成功获取提示 \"{$prompt}\" 的新闻并将其存储在 {$filename}\n";
     } else {
-        error_log("Error storing news for prompt \"{$prompt}\" in {$filename}.");
-        echo "Failed to store news for prompt: \"{$prompt}\". Check error log.\n";
+        error_log("为提示 \"{$prompt}\" 保存新闻到文件 {$filename} 时出错。");
+        echo "为提示 \"{$prompt}\" 保存新闻失败。请检查错误日志。\n";
     }
     // Add a small delay to avoid hitting rate limits if any, and to ensure unique filenames if prompts are processed very quickly
     sleep(1);
 }
 
-echo "Finished fetching news.\n";
+echo "新闻获取完成。\n";

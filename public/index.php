@@ -1,7 +1,7 @@
 <?php
 // --- Configuration ---
 $news_html_path = __DIR__ . '/../data/news_html/'; // Path to HTML news snippets
-$site_title = "AI News Aggregator";
+$site_title = "AI 新闻聚合器"; // Translated
 
 // --- Theme Switching Logic ---
 $current_hour = (int)date('G'); // 'G' for 24-hour format without leading zeros
@@ -24,7 +24,7 @@ if (!empty($news_files)) {
 
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN"> <!-- Set language to Chinese -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +38,7 @@ if (!empty($news_files)) {
 <body class="<?php echo htmlspecialchars($theme_class); ?>">
 
     <header>
-        <h1><?php echo htmlspecialchars($site_title); ?></h1>
+        <h1>今日新闻</h1> <!-- Translated -->
     </header>
 
     <main id="news-container">
@@ -59,12 +59,12 @@ if (!empty($news_files)) {
                 ?>
             <?php endforeach; ?>
         <?php else : ?>
-            <p>No news available at the moment. Please check back later.</p>
+            <p>暂时没有新闻。请稍后再回来查看。</p> <!-- Translated -->
         <?php endif; ?>
     </main>
 
     <footer>
-        <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_title); ?>. All rights reserved.</p>
+        <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_title); ?>. 版权所有。</p> <!-- Translated "All rights reserved" and site title is already Chinese -->
     </footer>
 
 </body>
