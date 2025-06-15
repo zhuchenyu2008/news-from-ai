@@ -83,6 +83,36 @@
     *   第二个任务在每小时的第5分钟运行 `run_processor.php`，给 `fetch_news.php` 留出完成时间。
     *   这些脚本的输出和错误将附加到 `logs/` 目录中的日志文件。
 
+#### 宝塔面板用户 (BT Panel Users)
+
+宝塔面板用户可以通过其图形界面轻松设置定时任务。以下是如何为 `fetch_news.php` 和 `run_processor.php` 脚本设置定时任务的步骤：
+
+1.  **登录宝塔面板：** 打开您的宝塔面板。
+2.  **进入计划任务：** 在左侧菜单中，点击“计划任务”。
+3.  **添加计划任务：**
+    *   **任务类型：** 选择“Shell脚本”。
+    *   **任务名称：** 输入一个描述性的名称，例如：“获取AI新闻”或“处理AI新闻”。
+    *   **执行周期：** 根据您的需求设置任务执行的频率（例如，每小时执行一次，可以设置为“每1小时”的“0分钟”）。
+    *   **脚本内容：** 这是关键步骤。您需要输入完整的命令。
+        *   **对于 `fetch_news.php`：**
+            ```bash
+            cd /www/wwwroot/your_project_directory/scripts && /usr/bin/php fetch_news.php >> /www/wwwroot/your_project_directory/logs/fetch_news.log 2>&1
+            ```
+        *   **对于 `run_processor.php`：**
+            ```bash
+            cd /www/wwwroot/your_project_directory/scripts && /usr/bin/php run_processor.php >> /www/wwwroot/your_project_directory/logs/run_processor.log 2>&1
+            ```
+        *   **重要提示：**
+            *   请将 `/www/wwwroot/your_project_directory/` 替换为您项目的实际绝对路径。在宝塔面板中，网站通常位于 `/www/wwwroot/` 目录下。
+            *   `/usr/bin/php` 是 PHP CLI 的常见路径。如果不确定，您可以在宝塔面板的终端中使用 `which php` 命令查找确切路径。
+            *   确保 `logs` 目录存在并且可写，以便记录脚本输出和错误。如果 `logs` 目录不存在，请在您的项目根目录下创建它。
+
+4.  **确认并保存：** 点击“添加任务”按钮。
+
+对 `fetch_news.php` 和 `run_processor.php` 重复这些步骤。建议将 `run_processor.php` 的执行时间设置在 `fetch_news.php` 完成之后（例如，晚几分钟执行），以确保有新的原始新闻可供处理。
+
+通过以上步骤，您的定时任务就应该可以在宝塔面板中自动运行了。
+
 ### Web 服务器设置
 
 1.  **文档根目录 (Document Root):** 配置您的 Web 服务器 (Apache, Nginx 等) 使用 `public/` 目录作为您站点的文档根目录。
