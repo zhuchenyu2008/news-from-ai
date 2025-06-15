@@ -27,13 +27,21 @@ require_once $newsProcessorPath;
 // 2. Load Configuration
 $apiKey = $config['api_key'] ?? null;
 $apiEndpoint = $config['api_endpoint'] ?? null;
-$systemPromptHtml = $config['system_prompt_html'] ?? null;
+$htmlPromptTemplate = $config['html_generation_prompt_template'] ?? null;
+$preferredHtmlStyle = $config['preferred_html_style'] ?? null;
+$aiModel = $config['ai_model'] ?? null;
 
 if (!$apiKey || !$apiEndpoint) {
     die("错误：API密钥或端点未在 config.php 中配置。\n");
 }
-if (!$systemPromptHtml) {
-    die("错误：用于HTML生成的系统提示 ('system_prompt_html') 未在 config.php 中配置。\n");
+if (empty($htmlPromptTemplate)) {
+    die("错误：HTML 生成提示模板 (html_generation_prompt_template) 未在 config.php 中配置。\n");
+}
+if (empty($preferredHtmlStyle)) { // Also check preferred_html_style, though 'auto' is a valid empty-ish value, explicit check for not null.
+    die("错误：首选 HTML 样式 (preferred_html_style) 未在 config.php 中配置。\n");
+}
+if (empty($aiModel)) {
+    die("错误：AI 模型名称 (ai_model) 未在 config.php 中配置。\n");
 }
 
 // Define data directories
@@ -42,7 +50,7 @@ $htmlOutputDir = PROJECT_ROOT . '/data/news_html/';
 
 // 3. Initialize AIHelper
 try {
-    $aiHelper = new AIHelper($apiKey, $apiEndpoint);
+    $aiHelper = new AIHelper($apiKey, $apiEndpoint, $aiModel);
 } catch (Exception $e) {
     die("错误：初始化 AIHelper 失败：" . $e->getMessage() . "\n");
 }
@@ -50,7 +58,13 @@ try {
 // 4. Initialize NewsProcessor
 // The NewsProcessor constructor handles creation of htmlOutputDir if it doesn't exist.
 try {
-    $newsProcessor = new NewsProcessor($aiHelper, $rawNewsDir, $htmlOutputDir, $systemPromptHtml);
+    $newsProcessor = new NewsProcessor(
+        $aiHelper,
+        $rawNewsDir,
+        $htmlOutputDir,
+        $htmlPromptTemplate,
+        $preferredHtmlStyle
+    );
 } catch (Exception $e) {
     die("错误：初始化 NewsProcessor 失败：" . $e->getMessage() . "\n");
 }

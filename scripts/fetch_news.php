@@ -8,17 +8,20 @@ require_once __DIR__ . '/../src/AIHelper.php';
 $apiKey = $config['api_key'] ?? null;
 $apiEndpoint = $config['api_endpoint'] ?? null;
 $userPrompts = $config['user_prompts'] ?? [];
+$aiModel = $config['ai_model'] ?? null;
 
 if (!$apiKey || !$apiEndpoint) {
     die("错误：API密钥或端点未配置。\n");
 }
-
 if (empty($userPrompts)) {
     die("错误：未配置用户提示。\n");
 }
+if (empty($aiModel)) {
+    die("错误：AI 模型名称 (ai_model) 未在 config.php 中配置。\n");
+}
 
 // 3. Initialize AIHelper
-$aiHelper = new AIHelper($apiKey, $apiEndpoint);
+$aiHelper = new AIHelper($apiKey, $apiEndpoint, $aiModel);
 
 // 4. Fetch News for Each Prompt
 $rawNewsDir = __DIR__ . '/../data/news_raw/';

@@ -4,19 +4,38 @@ class NewsProcessor {
     private AIHelper $aiHelper;
     private string $rawNewsDir;
     private string $htmlOutputDir;
-    private string $systemPromptHtml;
+    private string $htmlPromptTemplate;
+    private string $preferredHtmlStyle;
 
-    public function __construct(AIHelper $aiHelper, string $rawNewsDir, string $htmlOutputDir, string $systemPromptHtml) {
+    public function __construct(
+        AIHelper $aiHelper,
+        string $rawNewsDir,
+        string $htmlOutputDir,
+        string $htmlPromptTemplate,
+        string $preferredHtmlStyle
+    ) {
         $this->aiHelper = $aiHelper;
         $this->rawNewsDir = rtrim($rawNewsDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->htmlOutputDir = rtrim($htmlOutputDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        $this->systemPromptHtml = $systemPromptHtml;
+        $this->htmlPromptTemplate = $htmlPromptTemplate;
+        $this->preferredHtmlStyle = $preferredHtmlStyle;
 
-        if (empty(trim($this->systemPromptHtml))) {
-            throw new \InvalidArgumentException("System prompt for HTML generation cannot be empty.");
+        if (empty(trim($this->htmlPromptTemplate))) {
+            // Internal error, English is fine.
+            throw new \InvalidArgumentException("HTML prompt template cannot be empty.");
         }
-        if (strpos($this->systemPromptHtml, '[raw_news_text_here]') === false) {
-            throw new \InvalidArgumentException("System prompt for HTML generation must contain the placeholder '[raw_news_text_here]'.");
+        if (strpos($this->htmlPromptTemplate, '[raw_news_text_here]') === false) {
+            // Internal error, English is fine.
+            throw new \InvalidArgumentException("HTML prompt template must contain the placeholder '[raw_news_text_here]'.");
+        }
+        if (strpos($this->htmlPromptTemplate, '[preferred_style_placeholder]') === false) {
+            // Internal error, English is fine.
+            throw new \InvalidArgumentException("HTML prompt template must contain the placeholder '[preferred_style_placeholder]'.");
+        }
+        // A basic check for preferred_html_style, more robust validation could be added if needed.
+        if (empty(trim($this->preferredHtmlStyle))) {
+            // Internal error, English is fine.
+            throw new \InvalidArgumentException("Preferred HTML style cannot be empty.");
         }
 
         if (!is_dir($this->htmlOutputDir)) {
@@ -74,11 +93,12 @@ class NewsProcessor {
                 continue;
             }
 
-            // Replace placeholder in the system prompt
-            $prompt = str_replace('[raw_news_text_here]', $rawNewsText, $this->systemPromptHtml);
+            // Dynamically construct the prompt
+            $intermediatePrompt = str_replace('[preferred_style_placeholder]', $this->preferredHtmlStyle, $this->htmlPromptTemplate);
+            $finalPrompt = str_replace('[raw_news_text_here]', $rawNewsText, $intermediatePrompt);
 
             $messages = [
-                ['role' => 'user', 'content' => $prompt]
+                ['role' => 'user', 'content' => $finalPrompt]
             ];
 
             echo "正在处理文件：" . $rawFile . "...\n"; // Translated

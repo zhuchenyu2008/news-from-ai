@@ -3,24 +3,33 @@
 class AIHelper {
     private string $apiKey;
     private string $apiEndpoint;
-    private string $model = 'gpt-3.5-turbo'; // Hardcoded model for now
+    private string $modelName;
 
-    public function __construct(string $apiKey, string $apiEndpoint) {
+    public function __construct(string $apiKey, string $apiEndpoint, string $modelName) {
         $this->apiKey = $apiKey;
         $this->apiEndpoint = $apiEndpoint;
+        $this->modelName = $modelName;
+
+        if (empty(trim($this->modelName))) {
+            // This error message is not directly user-facing via console but could be caught and logged by calling scripts.
+            // For consistency with other new error messages, it can be in English or Chinese. Let's use English for internal logic.
+            throw new \InvalidArgumentException("AI model name cannot be empty.");
+        }
     }
 
     public function sendPrompt(array $messages): string|false {
         $ch = curl_init($this->apiEndpoint);
 
         if (!$ch) {
-            error_log("Failed to initialize cURL session.");
+            error_log("Failed to initialize cURL session."); // This log is not directly user-facing
             return false;
         }
 
         $postData = [
-            'model' => $this->model,
+            'model' => $this->modelName, // Use the dynamic model name
             'messages' => $messages,
+            // Future: Consider adding other parameters like temperature, max_tokens here
+            // 'temperature' => 0.7,
         ];
 
         $headers = [

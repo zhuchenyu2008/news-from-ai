@@ -53,7 +53,14 @@
         *   `60` (整数，如果由自定义调度程序使用)：建议每 60 分钟运行一次。
     *   `'user_prompts'`: 字符串数组。每个字符串都是一个供 AI 抓取新闻的主题或提示词。
         *   例如：`["可再生能源领域的最新进展", "全球股市趋势"]`
-    *   `'system_prompt_html'`: (已中文化) 用于指示 AI 将新闻文本转换为 HTML 片段的系统级提示。
+    *   `'ai_model'`: 用于AI交互的模型ID (例如: 'gpt-3.5-turbo', 'gpt-4')。确保您选择的模型与您的API密钥兼容并且适合任务需求。此设置由 `AIHelper` 使用。
+    *   `'html_generation_prompt_template'`: 一个详细的系统提示词模板，指导AI如何将原始新闻文本转换为HTML。此模板包含占位符 `[preferred_style_placeholder]` 和 `[raw_news_text_here]`，它们将由系统动态替换。用户可以根据高级需求调整此模板，但需谨慎。(此键替换了旧的 `system_prompt_html`)。
+    *   `'preferred_html_style'`: 用户首选的新闻HTML输出样式。AI将尝试遵循此设置。
+        *   `'auto'`：(默认) AI自动根据新闻内容判断最合适的输出样式。
+        *   `'timeline'`：时间线样式，适用于按时间顺序排列的事件。
+        *   `'detailed_article'`：详细单篇文章样式，适用于深入报道。
+        *   `'multi_faceted_report'`：多方面报告样式，适用于综合多个来源或观点。
+        *   注意：实际产生的HTML样式取决于AI对 `html_generation_prompt_template` 中指令的理解程度以及具体的新闻内容。
 
 ### 自动化任务 (Cron Jobs)
 
@@ -170,7 +177,7 @@
     *   抓取后不久，另一个 cron 任务触发 `scripts/run_processor.php` (脚本输出已中文化)。
     *   此脚本实例化 `NewsProcessor`。
     *   `NewsProcessor` 扫描 `data/news_raw/` 目录中的新 `.txt` 文件。
-    *   对于每个原始新闻文件，它会构建另一个提示词 (在 `NewsProcessor.php` 中预定义，从 `config.php` 加载，内容已中文化) 要求 AI 将文本转换为独立的 HTML 代码段。
+    *   对于每个原始新闻文件，它会根据 `config.php` 中定义的 `html_generation_prompt_template` 和 `preferred_html_style`，指示 AI 将原始新闻转换为特定风格的 HTML 代码段。
     *   它使用 `AIHelper` 将此格式化请求发送给 AI。
     *   AI 返回一个 HTML 字符串。
     *   此 HTML 代码段作为 `.html` 文件保存在 `data/news_html/` 目录中。然后删除原始的 `.txt` 文件。
@@ -184,7 +191,10 @@
 
 ## 自定义
 
-*   **用于内容格式化的 AI 提示词：** `NewsProcessor.php` (通过 `config.php` 的 `system_prompt_html`，其值已中文化) 用来要求 AI 生成 HTML 的提示词可以修改。这允许对新闻代码段的结构和样式进行高级自定义。例如，您可以指示 AI 使用特定的 HTML 标签、添加类，甚至尝试不同的表示样式（如时间轴或摘要）。这需要仔细的提示工程。
+*   **AI 内容格式化行为：**
+    *   核心的 HTML 生成逻辑由 `config/config.php` 文件中的 `html_generation_prompt_template` 键控制。这是一个详细的提示模板，指导 AI 如何根据原始文本和期望的风格（通过 `preferred_html_style` 设置）来创建 HTML。高级用户可以通过修改此模板来深度定制 AI 生成 HTML 的方式，例如调整不同风格的 HTML 结构、CSS 类名或对特定类型新闻内容的强调方式。
+    *   用户可以尝试定义全新的HTML样式。这需要在 `html_generation_prompt_template` 中详细描述新样式的适用场景、期望的HTML结构，并提供清晰的示例。这需要较强的提示工程能力，并且可能需要多次迭代才能达到理想效果。
+*   **首选HTML样式：** 通过修改 `config/config.php` 中的 `preferred_html_style` 值，用户可以指定默认的 HTML 输出风格（例如 `'timeline'`, `'detailed_article'` 等）。
 *   **CSS 样式：** 新闻条目和整个页面的外观可以通过编辑 `public/style.css` 文件进行完全自定义。
 *   **新闻主题的用户提示词：** 通过编辑 `config/config.php` 中的 `user_prompts` 数组，可以轻松更改用于新闻抓取的核心主题。
 
