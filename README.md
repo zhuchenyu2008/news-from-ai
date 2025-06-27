@@ -1,203 +1,227 @@
-# AI 驱动的新闻聚合器
+### **第一部分：项目概述**
 
-## 注意：此项目还在制作，请勿使用！
+  * **项目名称**: `news-from-ai` (AI新闻聚合器)
+  * **项目简介**: `news-from-ai`是一个基于PHP和MySQL的AI新闻聚合器，通过宝塔面板进行定时任务管理。它能根据用户设定的主题，全自动地从互联网抓取、分析、并以多种创新形式重塑新闻内容，同时集成RSS订阅源的AI摘要功能，致力于提供一个简洁、美观、个性化且信息深度丰富的新闻阅读体验。
+  * **功能特性清单**:
+      * **AI核心驱动**: 自动收集、分析、整合新闻。
+      * **动态呈现**: AI根据新闻内容决定最佳展示形式（时间线、多方报告等）。
+      * **极简依赖**: 后端仅需Composer安装Guzzle，前端库通过CDN加载，无需手动安装。
+      * **宝塔面板优化**: 提供针对宝塔面板的详细定时任务设置指南。
+      * **高度可配置**: 通过单个配置文件即可定义新闻主题、AI模型、API密钥和定时任务。
+      * **RSS集成**: 自动抓取RSS源，并由AI进行摘要总结。
+      * **美观的UI**: 简洁优雅的设计，支持日间/夜间模式自动切换，并有纯CSS实现的细腻动画效果。
+      * **来源可溯**: 所有新闻内容均可链接至原文。
+      * **通用API格式**: 支持所有兼容OpenAI格式的AI API。
 
-## 概述
+### **第二部分：技术选型与架构**
 
-本项目是一个基于 PHP 的 AI 驱动新闻聚合器。它使用 AI（例如 OpenAI 的 GPT 模型）自动收集用户定义主题的新闻内容，然后再次利用 AI 将这些新闻格式化为 HTML 代码段，并在一个简约的网页上展示。网页会根据时间自动切换日间/夜间主题。新闻主题和抓取计划均可由用户配置。
+  * **技术栈列表**:
 
-## 功能特性
+      * **后端**: PHP 8.1+
+      * **HTTP客户端**: Guzzle (通过Composer管理)
+      * **数据库**: MySQL 5.7+
+      * **前端**:
+          * HTML5
+          * CSS3 (含Flexbox/Grid布局, Variables, Transitions, Keyframes)
+          * 原生JavaScript (ES6+)
+      * **Markdown渲染**: marked.js (通过CDN加载: `https://cdn.jsdelivr.net/npm/marked/marked.min.js`)
+      * **服务器环境**: Nginx/Apache + PHP + MySQL (典型的宝塔面板环境)
+      * **定时任务**: 宝塔面板 (BT Panel) 的 “计划任务”
 
-*   **自动新闻抓取：** 根据可配置的提示词/主题，使用 AI 收集新闻。
-*   **AI 内容格式化：** 利用 AI 将原始新闻文本转换为可供展示的 HTML 代码段。
-*   **可配置主题：** 用户可以定义他们感兴趣的多个新闻主题。
-*   **可配置计划：** 可以使用 cron 任务自动化新闻抓取和处理流程。
-*   **动态主题：** 前端页面根据时间自动在日间和夜间主题间切换。
-*   **简约 Web 界面：** 以整洁、时间有序的方式展示处理后的新闻条目。
-*   **模块化结构：** 代码被组织到配置、源码、脚本和面向公众的文件中。
+  * **系统架构说明**:
+    本项目采用经典的前后端分离架构，各部分职责分明：
 
-## 目录结构
+    1.  **宝塔面板 (调度层)**: 作为任务调度器，根据用户设定的时间频率，通过Shell命令触发后端的PHP脚本。
+    2.  **后端PHP (逻辑层)**:
+          * **定时脚本**: 被宝塔面板调用，执行所有核心的数据抓取和处理工作，包括调用AI和搜索工具，解析RSS，并将最终结果存入数据库。这是整个系统的大脑。
+          * **API接口**: 提供一个简单的HTTP端点，供前端请求已处理好的新闻数据。
+    3.  **MySQL数据库 (持久层)**: 负责永久存储所有由AI生成的新闻内容、格式、来源和时间戳等信息。
+    4.  **前端 (表现层)**: 用户通过浏览器访问。它不处理任何业务逻辑，仅负责从后端API获取JSON数据，并将其动态渲染成美观、可交互的网页。主题切换和动画效果也在此层完成。
 
-*   `config/`: 包含配置文件。
-    *   `config.php`: 主要配置文件，用于 API 密钥、API 端点、计划任务和用户提示词。
-*   `src/`: 包含核心 PHP 类文件。
-    *   `AIHelper.php`: 负责与 AI API 交互的类。
-    *   `NewsProcessor.php`: 用于获取原始新闻并通过 AI 将其转换为 HTML 的类。
-    *   `load_config.php`: (实用脚本，但 `config.php` 通常被直接使用)。
-*   `public/`: Web 服务器的文档根目录，包含面向用户的文件。
-    *   `index.php`: 展示新闻的主页面（中文界面）。
-    *   `style.css`: 用于前端页面样式的 CSS 文件。
-*   `scripts/`: 包含用于自动化的命令行脚本（输出信息已中文化）。
-    *   `fetch_news.php`: 从 AI 获取原始新闻并存储。
-    *   `run_processor.php`: 使用 AI 处理原始新闻以生成 HTML 版本。
-*   `data/`: 存储动态应用程序数据。运行 PHP 脚本的用户需要对此目录有写入权限。
-    *   `news_raw/`: 存储由 `fetch_news.php` 获取的原始文本新闻条目。
-    *   `news_html/`: 存储由 `run_processor.php` 生成的处理后的 HTML 新闻代码段。
-*   `logs/`: (推荐) 用于存储 cron 任务日志的目录。您需要手动创建此目录。
+    **数据流**: 宝塔面板触发 -\> PHP定时脚本 -\> (调用外部搜索API & AI API) -\> 数据存入MySQL -\> 用户访问网页 -\> 前端JS请求PHP API接口 -\> PHP从MySQL读取数据返回 -\> 前端JS渲染页面。
 
-## 安装说明
-
-### 先决条件
-
-*   **PHP:** 版本 7.4 或更高。
-*   **PHP cURL 扩展:** 必须启用，以便 `AIHelper.php` 与 API 通信。(在 Debian/Ubuntu 上可通过 `sudo apt-get install php-curl` 安装)。
-*   **Web 服务器:** Apache, Nginx 或类似的，配置为可运行 PHP 文件。
-*   **Cron 后台程序:** 用于计划自动化任务。
-
-### 配置
-
-1.  **编辑 `config/config.php`:**
-    打开 `config/config.php` (该文件及其注释已中文化) 并修改以下值：
-    *   `'api_key'`: **必需。** 您的 AI 服务 API 密钥（例如 OpenAI）。您可以从 [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys) 获取 OpenAI API 密钥。
-    *   `'api_endpoint'`: AI API 的端点。默认为 OpenAI 的聊天补全 API 端点。如果使用兼容的替代方案，可以更改此设置。
-    *   `'news_schedule'`: 这主要是一个供人工阅读的 cron 调度建议。实际的计划在您的 cron 任务计划表 (crontab) 中定义（见下文）。例如：
-        *   `'0 * * * *'` (配置文件中的注释)：建议每小时运行一次。
-        *   `60` (整数，如果由自定义调度程序使用)：建议每 60 分钟运行一次。
-    *   `'user_prompts'`: 字符串数组。每个字符串都是一个供 AI 抓取新闻的主题或提示词。
-        *   例如：`["可再生能源领域的最新进展", "全球股市趋势"]`
-    *   `'ai_model'`: 用于AI交互的模型ID (例如: 'gpt-3.5-turbo', 'gpt-4')。确保您选择的模型与您的API密钥兼容并且适合任务需求。此设置由 `AIHelper` 使用。
-    *   `'html_generation_prompt_template'`: 一个详细的系统提示词模板，指导AI如何将原始新闻文本转换为HTML。此模板包含占位符 `[preferred_style_placeholder]` 和 `[raw_news_text_here]`，它们将由系统动态替换。用户可以根据高级需求调整此模板，但需谨慎。(此键替换了旧的 `system_prompt_html`)。
-    *   `'preferred_html_style'`: 用户首选的新闻HTML输出样式。AI将尝试遵循此设置。
-        *   `'auto'`：(默认) AI自动根据新闻内容判断最合适的输出样式。
-        *   `'timeline'`：时间线样式，适用于按时间顺序排列的事件。
-        *   `'detailed_article'`：详细单篇文章样式，适用于深入报道。
-        *   `'multi_faceted_report'`：多方面报告样式，适用于综合多个来源或观点。
-        *   注意：实际产生的HTML样式取决于AI对 `html_generation_prompt_template` 中指令的理解程度以及具体的新闻内容。
-
-### 自动化任务 (Cron Jobs)
-
-您需要设置 cron 任务来自动化新闻抓取和处理。
-
-1.  **创建日志目录 (推荐):**
-    ```bash
-    mkdir logs
-    ```
-
-2.  **编辑您的 crontab:**
-    打开您的 crontab 编辑器：
-    ```bash
-    crontab -e
-    ```
-    添加以下行，请根据您项目的实际位置调整路径：
-
-    ```cron
-    # 每小时的第0分钟抓取新的新闻文章
-    0 * * * * cd /path/to/your/project/ && php scripts/fetch_news.php >> /path/to/your/project/logs/fetch_news.log 2>&1
-
-    # 抓取后不久处理原始新闻为 HTML，例如每小时的第5分钟
-    5 * * * * cd /path/to/your/project/ && php scripts/run_processor.php >> /path/to/your/project/logs/run_processor.log 2>&1
-    ```
-    *   将 `/path/to/your/project/` 替换为您项目根目录的绝对路径。
-    *   第一个任务每小时运行一次 `fetch_news.php`。
-    *   第二个任务在每小时的第5分钟运行 `run_processor.php`，给 `fetch_news.php` 留出完成时间。
-    *   这些脚本的输出和错误将附加到 `logs/` 目录中的日志文件。
-
-#### 宝塔面板用户 (BT Panel Users)
-
-宝塔面板用户可以通过其图形界面轻松设置定时任务。以下是如何为 `fetch_news.php` 和 `run_processor.php` 脚本设置定时任务的步骤：
-
-1.  **登录宝塔面板：** 打开您的宝塔面板。
-2.  **进入计划任务：** 在左侧菜单中，点击“计划任务”。
-3.  **添加计划任务：**
-    *   **任务类型：** 选择“Shell脚本”。
-    *   **任务名称：** 输入一个描述性的名称，例如：“获取AI新闻”或“处理AI新闻”。
-    *   **执行周期：** 根据您的需求设置任务执行的频率（例如，每小时执行一次，可以设置为“每1小时”的“0分钟”）。
-    *   **脚本内容：** 这是关键步骤。您需要输入完整的命令。
-        *   **对于 `fetch_news.php`：**
-            ```bash
-            cd /www/wwwroot/your_project_directory/scripts && /usr/bin/php fetch_news.php >> /www/wwwroot/your_project_directory/logs/fetch_news.log 2>&1
-            ```
-        *   **对于 `run_processor.php`：**
-            ```bash
-            cd /www/wwwroot/your_project_directory/scripts && /usr/bin/php run_processor.php >> /www/wwwroot/your_project_directory/logs/run_processor.log 2>&1
-            ```
-        *   **重要提示：**
-            *   请将 `/www/wwwroot/your_project_directory/` 替换为您项目的实际绝对路径。在宝塔面板中，网站通常位于 `/www/wwwroot/` 目录下。
-            *   `/usr/bin/php` 是 PHP CLI 的常见路径。如果不确定，您可以在宝塔面板的终端中使用 `which php` 命令查找确切路径。
-            *   确保 `logs` 目录存在并且可写，以便记录脚本输出和错误。如果 `logs` 目录不存在，请在您的项目根目录下创建它。
-
-4.  **确认并保存：** 点击“添加任务”按钮。
-
-对 `fetch_news.php` 和 `run_processor.php` 重复这些步骤。建议将 `run_processor.php` 的执行时间设置在 `fetch_news.php` 完成之后（例如，晚几分钟执行），以确保有新的原始新闻可供处理。
-
-通过以上步骤，您的定时任务就应该可以在宝塔面板中自动运行了。
-
-### Web 服务器设置
-
-1.  **文档根目录 (Document Root):** 配置您的 Web 服务器 (Apache, Nginx 等) 使用 `public/` 目录作为您站点的文档根目录。
-2.  **PHP 处理:** 确保您的 Web 服务器配置为可以处理 PHP 文件 (例如，通过 `libapache2-mod-php` 或 `php-fpm`)。
-
-    *Apache VirtualHost 配置示例:*
-    ```apache
-    <VirtualHost *:80>
-        ServerName yourdomain.com
-        DocumentRoot /path/to/your/project/public
-
-        <Directory /path/to/your/project/public>
-            AllowOverride All
-            Require all granted
-            DirectoryIndex index.php
-        </Directory>
-
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
-    </VirtualHost>
-    ```
-
-    *Nginx Server Block 配置示例:*
-    ```nginx
-    server {
-        listen 80;
-        server_name yourdomain.com;
-        root /path/to/your/project/public;
-
-        index index.php;
-
-        location / {
-            try_files $uri $uri/ /index.php?$query_string;
-        }
-
-        location ~ \.php$ {
-            include snippets/fastcgi-php.conf;
-            fastcgi_pass unix:/var/run/php/php8.x-fpm.sock; # 根据您的 PHP 版本调整
-        }
-    }
-    ```
-
-## 工作原理
-
-应用程序按以下顺序运行：
-
-1.  **抓取新闻 (自动化):**
-    *   cron 任务触发 `scripts/fetch_news.php` (脚本输出已中文化)。
-    *   此脚本从 `config/config.php` 读取 `user_prompts` (用户定义的提示词)。
-    *   对于每个提示词，它使用 `AIHelper`向配置的 AI API 发送请求。
-    *   AI 根据提示词返回原始文本内容。
-    *   原始文本内容作为唯一的 `.txt` 文件保存在 `data/news_raw/` 目录中。
-
-2.  **处理新闻 (自动化):**
-    *   抓取后不久，另一个 cron 任务触发 `scripts/run_processor.php` (脚本输出已中文化)。
-    *   此脚本实例化 `NewsProcessor`。
-    *   `NewsProcessor` 扫描 `data/news_raw/` 目录中的新 `.txt` 文件。
-    *   对于每个原始新闻文件，它会根据 `config.php` 中定义的 `html_generation_prompt_template` 和 `preferred_html_style`，指示 AI 将原始新闻转换为特定风格的 HTML 代码段。
-    *   它使用 `AIHelper` 将此格式化请求发送给 AI。
-    *   AI 返回一个 HTML 字符串。
-    *   此 HTML 代码段作为 `.html` 文件保存在 `data/news_html/` 目录中。然后删除原始的 `.txt` 文件。
-
-3.  **展示新闻 (用户访问):**
-    *   当用户在浏览器中访问 `index.php` (通过 Web 服务器) 时：
-        *   脚本确定当前时间，以便在 `<body>` 标签上设置 `theme-light` (日间主题) 或 `theme-dark` (夜间主题) 类。 (页面本身已中文化)
-        *   它扫描 `data/news_html/` 目录以查找处理后的 `.html` 文件。
-        *   它读取每个 HTML 文件的内容，并将其直接嵌入到网页中。
-        *   `style.css` 提供页面的样式，包括主题和新闻条目的外观。
-
-## 自定义
-
-*   **AI 内容格式化行为：**
-    *   核心的 HTML 生成逻辑由 `config/config.php` 文件中的 `html_generation_prompt_template` 键控制。这是一个详细的提示模板，指导 AI 如何根据原始文本和期望的风格（通过 `preferred_html_style` 设置）来创建 HTML。高级用户可以通过修改此模板来深度定制 AI 生成 HTML 的方式，例如调整不同风格的 HTML 结构、CSS 类名或对特定类型新闻内容的强调方式。
-    *   用户可以尝试定义全新的HTML样式。这需要在 `html_generation_prompt_template` 中详细描述新样式的适用场景、期望的HTML结构，并提供清晰的示例。这需要较强的提示工程能力，并且可能需要多次迭代才能达到理想效果。
-*   **首选HTML样式：** 通过修改 `config/config.php` 中的 `preferred_html_style` 值，用户可以指定默认的 HTML 输出风格（例如 `'timeline'`, `'detailed_article'` 等）。
-*   **CSS 样式：** 新闻条目和整个页面的外观可以通过编辑 `public/style.css` 文件进行完全自定义。
-*   **新闻主题的用户提示词：** 通过编辑 `config/config.php` 中的 `user_prompts` 数组，可以轻松更改用于新闻抓取的核心主题。
+### **第三部分：文件与目录结构**
 
 ```
+news-from-ai/
+├── app/                      # 核心后端逻辑
+│   ├── cron/
+│   │   └── fetch_news.php    # 定时任务执行的脚本
+│   ├── lib/
+│   │   ├── AIConnector.php   # 封装AI API调用的类
+│   │   ├── Database.php      # 数据库连接和操作类
+│   │   ├── RssParser.php     # RSS解析类
+│   │   └── SearchTool.php    # 封装联网搜索API的类
+│   └── api/
+│       └── get_news.php      # 前端获取新闻数据的API端点
+│
+├── public/                   # Web服务器的根目录，前端文件
+│   ├── css/
+│   │   └── style.css         # 主要样式文件
+│   ├── js/
+│   │   └── main.js           # 主要的JavaScript逻辑
+│   └── index.php             # 前端主入口页面
+│
+├── vendor/                   # Composer安装的依赖 (Guzzle)
+│
+├── config.php                # 配置文件 (重要！需设为私有)
+├── config.php.example        # 配置文件的模板
+├── composer.json             # Composer依赖定义
+└── README.md                 # GitHub项目说明
+```
+
+### **第四部分：核心模块功能详解**
+
+  * **4.1 配置文件 (`config.php`)**:
+    这是系统的总控制中心。它是一个纯PHP文件，通过`define`定义一系列全局常量。其内容应包括：
+
+      * **数据库配置**: `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`。
+      * **用户自定义配置**:
+          * `USER_NEWS_PROMPT`: 字符串，用户希望AI关注的新闻核心主题。例如“关于具身智能的最新研究进展和开源机器人项目”。
+          * `CRON_SCHEDULE`: 字符串，Cron表达式，用于`README`中提示用户如何设置，例如 `'0 */2 * * *'` 代表每两小时。
+      * **RSS订阅源**: `RSS_FEEDS`，一个包含多个RSS URL字符串的PHP数组。
+      * **联网搜索工具配置**: `SEARCH_API_CONFIG`，一个包含API密钥和API URL的关联数组。
+      * **AI服务配置**: `AI_CONFIGS`，一个多维关联数组。键名代表任务（如`news_analyzer`, `rss_summarizer`），值是包含该任务所需API密钥、API URL和模型名称的又一个关联数组。这种设计实现了对不同任务使用不同AI服务的高度灵活性。
+
+  * **4.2 后端定时脚本 (`app/cron/fetch_news.php`)**:
+    此脚本是整个自动化流程的核心，其执行逻辑如下：
+
+    1.  **初始化**: 加载`config.php`和`vendor/autoload.php`，并实例化所有`lib`目录下的辅助类。
+    2.  **生成搜索查询**: 调用`query_generator` AI。给它的系统提示词大意为：“你是一个新闻研究员。根据用户的核心兴趣：‘{USER\_NEWS\_PROMPT}’，生成5个今天最值得搜索的、具体的、时效性强的Google搜索关键词。以JSON数组格式返回。”
+    3.  **执行联网搜索**: 遍历AI返回的关键词，使用`SearchTool`类调用外部搜索API，获取每个关键词对应的多条新闻URL、标题和摘要。
+    4.  **AI分析与创作**: 将一批相关的新闻素材（URL和摘要）整合后，喂给`news_analyzer` AI。它的系统提示词是关键，大意为：“你是一位资深新闻编辑。请整合以下新闻素材，并决定最合适的呈现形式（从'timeline', 'multi\_source\_report', 'single\_article\_deep\_dive'中选择一个）。然后，使用Markdown撰写一篇结构清晰的报道，并在引用信息处用 `[来源](URL)` 格式标注原文链接。最后，将你的输出封装在一个JSON对象中，包含`format`和`content`两个键。”
+    5.  **处理RSS订阅**: 使用`RssParser`类遍历`RSS_FEEDS`，获取新文章。对每篇新文章，调用`rss_summarizer` AI进行总结。其提示词大意为：“请将以下文章内容总结为三点核心摘要，并写一段总结性评论。使用Markdown格式。”
+    6.  **数据持久化**: 将上述两种方式获得的、格式化的新闻内容（包括`format`类型和Markdown正文）以及所有相关的源链接，存入MySQL的`news_items`表中。
+
+  * **4.3 后端数据接口 (`app/api/get_news.php`)**:
+    此接口非常简单，它不接受任何参数。其功能是：连接数据库，查询`news_items`表，按时间倒序获取最新的若干条新闻，然后将结果以JSON数组的形式输出给前端。
+
+  * **4.4 前端实现 (`public/` 目录)**:
+
+      * **`index.php`**: 包含基本的HTML5文档结构，如`<header>`, `<main id="news-feed">`和`<footer>`。在`<body>`的末尾，通过`<script>`标签引入CDN上的`marked.js`和本地的`main.js`。
+      * **`js/main.js`**: 页面加载后执行。主要逻辑包括：
+        1.  检查当前客户端的小时数，为`<body>`标签添加`light-theme`或`dark-theme`类。
+        2.  使用`fetch`函数异步请求`/app/api/get_news.php`接口。
+        3.  请求成功后，遍历返回的JSON数组。对每一条新闻数据，动态创建一个`<article>`元素。
+        4.  使用`marked.parse()`函数将新闻的Markdown内容转换为HTML。
+        5.  将转换后的HTML和元数据（如发布时间）填充到`<article>`元素中，并将其附加到`<main id="news-feed">`容器里。
+        6.  通过为新创建的`<article>`元素添加一个CSS类（如`animate-in`）来触发CSS动画。
+      * **`css/style.css`**:
+        1.  使用CSS变量定义日间和夜间两套主题的颜色（背景、文字、卡片背景等）。
+        2.  根据`body`上的`.light-theme`或`.dark-theme`类来应用不同的颜色变量。
+        3.  定义新闻卡片`.news-item`的通用样式。
+        4.  使用`@keyframes`定义一个从下到上、从透明到不透明的入场动画。
+        5.  定义`.animate-in`类，当这个类被添加到元素上时，应用上述动画。
+
+  * **4.5 数据库设计**:
+    在MySQL中创建一个名为`news_items`的表，其结构应包含以下字段：
+
+      * `id`: `INT`, `AUTO_INCREMENT`, `PRIMARY KEY` - 唯一标识符。
+      * `format`: `VARCHAR(50)`, `NOT NULL` - AI决定的呈现形式，如'timeline'。
+      * `content_markdown`: `TEXT`, `NOT NULL` - AI生成的Markdown格式的新闻正文。
+      * `source_url`: `VARCHAR(2048)` - 主要来源链接（主要用于RSS摘要）。
+      * `sources_json`: `JSON` - 存储所有引用来源的JSON数组，每个对象包含title和url。
+      * `created_at`: `TIMESTAMP`, `DEFAULT CURRENT_TIMESTAMP` - 条目创建时间，用于排序。
+
+### **第五部分：部署指南与README文档**
+
+以下是可直接复制使用的`README.md`文件全文。
+
+-----
+
+# news-from-ai (AI新闻聚合器)
+
+`news-from-ai` 是一个基于PHP和MySQL的AI新闻聚合器。它通过宝塔面板进行定时任务管理，旨在简化部署和配置，让您轻松搭建自己的AI新闻站。
+
+## ✨ 功能特性
+
+  - **AI核心驱动**: 自动收集、分析、整合新闻。
+  - **动态呈现**: AI根据新闻内容决定最佳展示形式（时间线、多方报告等）。
+  - **极简依赖**: 后端仅需Composer安装Guzzle，前端库通过CDN加载，无需手动安装。
+  - **宝塔面板优化**: 提供针对宝塔面板的详细定时任务设置指南。
+  - **美观的UI**: 简洁优雅的设计，支持日间/夜间模式自动切换，并有纯CSS实现的细腻动画效果。
+  - **来源可溯**: 所有新闻内容均可链接至原文。
+
+## 🛠️ 技术栈
+
+  - **后端**: PHP 8.1+
+  - **HTTP客户端**: Guzzle
+  - **前端**: Vanilla JavaScript, marked.js (via CDN), 纯CSS动画
+  - **数据库**: MySQL
+  - **定时任务**: 宝塔面板 (BT Panel)
+
+## 🚀 在宝塔面板上部署
+
+1.  **准备工作**
+
+      - 登录您的宝塔面板。
+      - 确保已安装 **PHP 8.1或更高版本**、**Nginx/Apache** 和 **MySQL**。
+
+2.  **上传代码**
+
+      - 点击左侧菜单的 “文件”。
+      - 进入您的网站根目录（例如 `/www/wwwroot/yourdomain.com`）。
+      - 将本项目的所有文件上传到这里。
+
+3.  **创建数据库**
+
+      - 点击左侧菜单的 “数据库”。
+      - 点击 “添加数据库”，创建一个新的MySQL数据库，并记下数据库名、用户名和密码。
+      - 进入创建好的数据库管理界面，执行以下SQL语句创建`news_items`表：
+        ```sql
+        CREATE TABLE `news_items` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `format` VARCHAR(50) NOT NULL COMMENT 'AI决定的呈现形式',
+          `content_markdown` TEXT NOT NULL COMMENT 'AI生成的Markdown内容',
+          `source_url` VARCHAR(2048) COMMENT '主要来源链接（用于RSS摘要）',
+          `sources_json` JSON COMMENT '所有来源链接的JSON数组',
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX `idx_created_at` (`created_at`)
+        );
+        ```
+
+4.  **安装Guzzle**
+
+      - 点击左侧菜单的 “终端”。
+      - 输入以下命令进入您的网站目录：
+        ```bash
+        cd /www/wwwroot/yourdomain.com
+        ```
+      - 执行Composer安装命令：
+        ```bash
+        composer install
+        ```
+        这会自动下载`guzzlehttp/guzzle`并生成`vendor`目录。
+
+5.  **修改配置**
+
+      - 在宝塔文件管理器中，将`config.php.example`复制并重命名为`config.php`。
+      - 编辑 `config.php`，填入您在第3步中创建的**数据库信息**。
+      - 填入您的**AI API密钥**、**搜索工具API密钥**以及您想关注的**新闻主题**。
+
+6.  **设置网站**
+
+      - 点击左侧菜单的 “网站”。
+      - 找到您的网站，点击 “设置”。
+      - 在 “网站目录” 设置中，将运行目录设置为 `/public`，然后保存。这可以提高网站安全性。
+
+7.  **设置定时任务 (核心步骤)**
+
+      - 点击左侧菜单的 “计划任务”。
+      - **任务类型**: 选择 **“Shell脚本”**。
+      - **任务名称**: 自定义，例如 “抓取AI新闻”。
+      - **执行周期**: 根据您的需求设置，例如 “每2小时”，就在小时框里填入 `*/2`。
+      - **脚本内容**: 填入以下命令，**注意替换路径**：
+        ```bash
+        /www/server/php/81/bin/php /www/wwwroot/yourdomain.com/app/cron/fetch_news.php
+        ```
+        > **重要**: `/www/server/php/81/bin/php` 是宝塔中PHP 8.1的默认路径，`/www/wwwroot/yourdomain.com` 是您的网站路径。请根据您的实际情况进行修改！
+      - 点击 “添加任务”。
+
+8.  **完成！**
+
+      - 您可以手动执行一次计划任务进行测试。执行成功后，刷新您的网站，就应该能看到由AI生成的第一批新闻了。
+
+## 📄 许可证
+
+本项目采用 [MIT License](https://www.google.com/search?q=LICENSE)。
