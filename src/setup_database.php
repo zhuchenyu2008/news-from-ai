@@ -105,7 +105,7 @@ foreach ($sqlStatements as $sql) {
 // 现在 rss_feeds 表已创建，可以尝试添加外键到 news_articles (如果之前未成功或需要单独处理)
 $alterTableSQL = "ALTER TABLE `news_articles`
     ADD CONSTRAINT `fk_news_rss_feed`
-    FOREIGN KEY IF NOT EXISTS (`rss_feed_id`) REFERENCES `rss_feeds`(`id`)
+    FOREIGN KEY (`rss_feed_id`) REFERENCES `rss_feeds`(`id`)
     ON DELETE SET NULL ON UPDATE CASCADE;";
 
 // 检查外键是否已存在 (这是一个简化的检查，更可靠的方法是查询 information_schema)
