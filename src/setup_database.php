@@ -71,7 +71,7 @@ $sqlStatements = [
     "CREATE TABLE IF NOT EXISTS `ai_tasks_log` (
         `id` INT AUTO_INCREMENT PRIMARY KEY,
         `task_type` VARCHAR(100) NOT NULL COMMENT 'e.g., rss_summary, news_sourcing, presentation_design',
-        `input_data_ref` VARCHAR(255) DEFAULT NULL COMMENT 'e.g., news_id, rss_url_or_id',
+        `input_data_ref` TEXT DEFAULT NULL COMMENT 'e.g., news_id, rss_url_or_id',
         `status` VARCHAR(20) NOT NULL COMMENT 'success, failure',
         `prompt_used` TEXT DEFAULT NULL,
         `ai_response_raw` TEXT DEFAULT NULL,
@@ -105,7 +105,7 @@ foreach ($sqlStatements as $sql) {
 // 现在 rss_feeds 表已创建，可以尝试添加外键到 news_articles (如果之前未成功或需要单独处理)
 $alterTableSQL = "ALTER TABLE `news_articles`
     ADD CONSTRAINT `fk_news_rss_feed`
-    FOREIGN KEY IF NOT EXISTS (`rss_feed_id`) REFERENCES `rss_feeds`(`id`)
+    FOREIGN KEY (`rss_feed_id`) REFERENCES `rss_feeds`(`id`)
     ON DELETE SET NULL ON UPDATE CASCADE;";
 
 // 检查外键是否已存在 (这是一个简化的检查，更可靠的方法是查询 information_schema)
@@ -124,6 +124,31 @@ if ($fkResult && $fkResult->num_rows == 0) {
     echo "外键 `fk_news_rss_feed` 似乎已存在于表 `news_articles`。\n";
 } else {
     echo "警告：检查外键 `fk_news_rss_feed` 是否存在时出错: " . $mysqli->error . "\n";
+}
+
+// 检查并更新 ai_tasks_log.input_data_ref 列类型 (如果需要)
+$checkColumnTypeSQL = "SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+                       WHERE TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME = 'ai_tasks_log' AND COLUMN_NAME = 'input_data_ref';";
+$columnTypeResult = $mysqli->query($checkColumnTypeSQL);
+
+if ($columnTypeResult && $columnTypeResult->num_rows > 0) {
+    $row = $columnTypeResult->fetch_assoc();
+    $currentDataType = strtolower($row['DATA_TYPE']);
+    // Common text types in MySQL are 'text', 'mediumtext', 'longtext'. Varchar is 'varchar'.
+    if ($currentDataType == 'varchar') { // If it's varchar, it's likely the old 255 limit
+        $alterAiTaskLogSQL = "ALTER TABLE `ai_tasks_log` MODIFY COLUMN `input_data_ref` TEXT DEFAULT NULL COMMENT 'e.g., news_id, rss_url_or_id';";
+        if ($mysqli->query($alterAiTaskLogSQL) === TRUE) {
+            echo "列 `ai_tasks_log`.`input_data_ref` 已成功修改为 TEXT 类型。\n";
+        } else {
+            echo "警告：修改列 `ai_tasks_log`.`input_data_ref` 为 TEXT 类型失败: " . $mysqli->error . "\n";
+        }
+    } elseif ($currentDataType == 'text' || $currentDataType == 'mediumtext' || $currentDataType == 'longtext') {
+        echo "列 `ai_tasks_log`.`input_data_ref` 类型已经是 TEXT 或其变体，无需修改。\n";
+    } else {
+        echo "列 `ai_tasks_log`.`input_data_ref` 类型为 {$currentDataType}，未进行修改。\n";
+    }
+} else {
+    echo "警告：检查列 `ai_tasks_log`.`input_data_ref` 类型时出错或列不存在: " . $mysqli->error . "\n";
 }
 
 
