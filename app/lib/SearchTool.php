@@ -11,6 +11,7 @@ class SearchTool
     private Client $client;
     private string $apiKey;
     private string $apiUrl;
+    private string $cx; // Programmable Search Engine ID
 
     public function __construct()
     {
@@ -25,13 +26,18 @@ class SearchTool
             }
         }
 
-        if (!is_array(SEARCH_API_CONFIG) || empty(SEARCH_API_CONFIG['api_key']) || empty(SEARCH_API_CONFIG['api_url'])) {
-            error_log('SearchTool Error: Invalid or missing SEARCH_API_CONFIG (api_key, api_url).');
-            throw new Exception('SearchTool Error: Invalid configuration for search API.');
+        // Validate Google Custom Search specific config
+        if (!is_array(SEARCH_API_CONFIG) ||
+            empty(SEARCH_API_CONFIG['api_key']) ||
+            empty(SEARCH_API_CONFIG['api_url']) ||
+            empty(SEARCH_API_CONFIG['cx'])) {
+            error_log('SearchTool Error: Invalid or missing SEARCH_API_CONFIG (api_key, api_url, cx for Google Search).');
+            throw new Exception('SearchTool Error: Invalid configuration for Google Custom Search API.');
         }
 
         $this->apiKey = SEARCH_API_CONFIG['api_key'];
         $this->apiUrl = SEARCH_API_CONFIG['api_url'];
+        $this->cx = SEARCH_API_CONFIG['cx'];
 
         $this->client = new Client([
             'timeout' => 20.0, // Timeout for search API requests
@@ -57,14 +63,18 @@ class SearchTool
         // This example assumes the API key is sent as a Bearer token and query as a 'q' parameter.
         // You MUST adjust this based on the actual search API provider's documentation.
 
+        // Parameters for Google Custom Search JSON API
         $parameters = [
-            'q' => $query,
-            'num' => 5 // Example: request 5 results, make this configurable if needed
+            'key' => $this->apiKey,
+            'cx'  => $this->cx,
+            'q'   => $query,
+            'num' => 5 // Request 5 results. Google API allows 1-10.
+                       // This could be made configurable if needed.
         ];
 
+        // Google Custom Search API takes API key as a query parameter, not in headers.
         $headers = [
-            'Authorization' => 'Bearer ' . $this->apiKey, // Common for many APIs
-            'Accept'        => 'application/json',
+            'Accept' => 'application/json',
         ];
 
         // Example for an API that takes API key as a query param (e.g. Google Custom Search JSON API style)
@@ -75,7 +85,7 @@ class SearchTool
             $response = $this->client->get($this->apiUrl, [
                 'query'   => $parameters,
                 'headers' => $headers,
-                'http_errors' => true,
+                'http_errors' => true, // Guzzle will throw an exception for 4xx/5xx responses
             ]);
 
             $body = json_decode((string) $response->getBody(), true);
