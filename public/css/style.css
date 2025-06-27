@@ -1,0 +1,310 @@
+/* public/css/style.css */
+
+/* --- 基本重置和全局样式 --- */
+:root {
+    --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-family-serif: "Georgia", "Times New Roman", serif;
+
+    /* Light Mode (Default) */
+    --bg-color: #f8f9fa;
+    --text-color: #212529;
+    --card-bg-color: #ffffff;
+    --card-border-color: #e9ecef;
+    --link-color: #007bff;
+    --link-hover-color: #0056b3;
+    --header-bg: #ffffff;
+    --header-border: #dee2e6;
+    --button-bg: #007bff;
+    --button-text: #ffffff;
+    --button-hover-bg: #0056b3;
+    --meta-text-color: #6c757d;
+
+    --animation-duration: 0.3s;
+}
+
+html.dark-mode {
+    /* Dark Mode */
+    --bg-color: #1a1a1a; /* 更深的背景 */
+    --text-color: #e0e0e0; /* 柔和的白色文本 */
+    --card-bg-color: #2c2c2c; /* 深色卡片背景 */
+    --card-border-color: #444444; /* 更深的边框 */
+    --link-color: #66bfff; /* 亮蓝色链接 */
+    --link-hover-color: #8ccfff;
+    --header-bg: #212121;
+    --header-border: #383838;
+    --button-bg: #66bfff;
+    --button-text: #121212;
+    --button-hover-bg: #8ccfff;
+    --meta-text-color: #adb5bd;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-sans);
+    line-height: 1.6;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color var(--animation-duration) ease, color var(--animation-duration) ease;
+    padding-top: 80px; /* 为固定头部留出空间 */
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+    transition: color var(--animation-duration) ease;
+}
+
+a:hover {
+    color: var(--link-hover-color);
+    text-decoration: underline;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* --- 头部 --- */
+header {
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--header-border);
+    padding: 1rem 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    transition: background-color var(--animation-duration) ease, border-bottom-color var(--animation-duration) ease;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 a {
+    color: var(--text-color);
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-decoration: none;
+}
+header h1 a:hover {
+    text-decoration: none;
+}
+
+
+#theme-toggle-button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color var(--animation-duration) ease;
+}
+
+#theme-toggle-button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+/* --- 主内容区域 --- */
+main.container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.no-news {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--meta-text-color);
+    padding: 3rem 0;
+}
+
+/* --- 新闻网格和卡片 --- */
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.news-item.card {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--card-border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform var(--animation-duration) ease, box-shadow var(--animation-duration) ease,
+                background-color var(--animation-duration) ease, border-color var(--animation-duration) ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.news-item.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.news-item-header h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.news-meta {
+    font-size: 0.85rem;
+    color: var(--meta-text-color);
+    margin-bottom: 1rem;
+}
+
+.news-meta span {
+    margin-right: 10px;
+}
+.news-meta span:last-child {
+    margin-right: 0;
+}
+
+.news-content-ai {
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    flex-grow: 1; /* 让内容区域占据多余空间 */
+}
+
+.news-content-ai h1, .news-content-ai h2, .news-content-ai h3,
+.news-content-ai h4, .news-content-ai h5, .news-content-ai h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    color: var(--text-color);
+}
+.news-content-ai h1 { font-size: 1.8em; }
+.news-content-ai h2 { font-size: 1.5em; }
+.news-content-ai h3 { font-size: 1.25em; }
+
+.news-content-ai p {
+    margin-bottom: 1em;
+}
+.news-content-ai p:last-child {
+    margin-bottom: 0;
+}
+
+.news-content-ai ul, .news-content-ai ol {
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+.news-content-ai blockquote {
+    border-left: 3px solid var(--link-color);
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: var(--meta-text-color);
+}
+
+.news-content-ai pre {
+    background-color: var(--bg-color); /* Slightly different from card for contrast */
+    padding: 1em;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin-bottom: 1em;
+    border: 1px solid var(--card-border-color);
+}
+html.dark-mode .news-content-ai pre {
+    background-color: #333; /* Darker pre background */
+    border-color: #555;
+}
+
+
+.news-footer {
+    margin-top: auto; /* 将页脚推到底部 */
+    padding-top: 1rem;
+    border-top: 1px solid var(--card-border-color);
+}
+
+.read-original {
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* --- 页脚 --- */
+footer {
+    background-color: var(--header-bg); /* Can be same as header or a bit darker/lighter */
+    border-top: 1px solid var(--header-border);
+    padding: 1.5rem 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--meta-text-color);
+    margin-top: 2rem;
+    transition: background-color var(--animation-duration) ease, border-top-color var(--animation-duration) ease;
+}
+
+/* --- 动画 --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.news-item.card {
+    animation: fadeIn var(--animation-duration) ease-out forwards;
+    opacity: 0; /* Start hidden for animation */
+}
+
+/* Staggered animation for cards */
+<?php for ($i = 0; $i < 20; $i++): // Assuming max 20 items for initial load animation ?>
+.news-item.card:nth-child(<?php echo $i + 1; ?>) {
+    animation-delay: <?php echo $i * 0.05; ?>s;
+}
+<?php endfor; ?>
+
+
+/* Specific styles for presentation formats (optional, can be expanded) */
+.news-item.timeline_event {
+    /* border-left: 5px solid var(--link-color); */
+}
+.news-item.multi_confirm .news-content-ai {
+    /* อาจจะมีสไตล์พิเศษสำหรับการแสดงหลายแหล่งที่มา */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px; /* Adjust for potentially smaller header */
+    }
+    header h1 a {
+        font-size: 1.5rem;
+    }
+    #theme-toggle-button {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    .news-grid {
+        grid-template-columns: 1fr; /* Stack on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 95%;
+    }
+     header .container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    body {
+        padding-top: 110px; /* Adjust for taller header */
+    }
+}
