@@ -74,7 +74,8 @@ try {
 
     if ($rawKeywordsResponse) {
         // Attempt to find JSON array within the response, as AI might add extra text
-        if (preg_match('/\[.*\]/', $rawKeywordsResponse, $matches)) {
+        // Added 's' modifier to make dot match newlines, as AI response might be multi-line.
+        if (preg_match('/\[.*\]/s', $rawKeywordsResponse, $matches)) {
             $jsonResponse = $matches[0];
             $decodedKeywords = json_decode($jsonResponse, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decodedKeywords)) {
