@@ -91,6 +91,7 @@ function call_openai_api(
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_TIMEOUT, 180); // 进一步增加超时时间，AI响应和HTML生成可能较慢
+    curl_setopt($ch, CURLOPT_BUFFERSIZE, 1024 * 1024); // Set a larger buffer size (1MB) just in case
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true); // 生产环境建议开启
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);   // 生产环境建议开启
 
@@ -110,21 +111,67 @@ function call_openai_api(
     }
 
     // log_debug("AI API 原始响应 ({$apiUrl}): " . $response); // 响应可能非常长，调试时按需开启
+
+    // Log the full raw response before attempting to decode
+    log_debug("AI API Raw Response ({$apiUrl}): " . $response);
+    // Save raw response to a temporary file for inspection
+    // Ensure the logs directory exists and is writable, which should be handled by the logger setup.
+    // Construct path relative to a known base directory if __DIR__ causes issues in certain execution contexts.
+    // For now, assume __DIR__ is appropriate.
+    $logBaseDir = defined('LOG_BASE_PATH') ? LOG_BASE_PATH : __DIR__ . '/../logs'; // Assuming LOG_BASE_PATH might be defined in config
+    if (!is_dir($logBaseDir)) {
+        @mkdir($logBaseDir, 0755, true);
+    }
+    $rawResponseFilename = 'ai_raw_response_' . time() . '_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $model) . '.txt';
+    $rawResponseFilePath = $logBaseDir . '/' . $rawResponseFilename;
+
+    // Attempt to write the raw response.
+    // Use a simplified timestamp for the content of the file itself.
+    $fileContent = "URL: {$apiUrl}\nModel: {$model}\nTimestamp: " . date('Y-m-d H:i:s') . "\n\nResponse:\n{$response}";
+    if (file_put_contents($rawResponseFilePath, $fileContent) === false) {
+        log_warning("Failed to save raw AI response to: " . $rawResponseFilePath . ". Check directory permissions and path.");
+    } else {
+        log_info("Saved raw AI response to: " . $rawResponseFilePath);
+    }
+
     $responseData = json_decode($response, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-        log_error("AI API JSON解码错误 ({$apiUrl}): " . json_last_error_msg());
+        $jsonErrorMsg = json_last_error_msg();
+        // Log a snippet of the response that caused the error
+        $responseSnippetLength = 500;
+        $responseSnippet = mb_substr($response, 0, $responseSnippetLength, 'UTF-8'); // Use mb_substr for UTF-8 safety
+        log_error("AI API JSON解码错误 ({$apiUrl}): " . $jsonErrorMsg . ". Response (first {$responseSnippetLength} chars): " . $responseSnippet);
+        // Log the path to the full raw response file again for easy access in case of JSON error
+        log_error("Full raw response was saved to: " . $rawResponseFilePath);
         return null;
     }
 
     if (isset($responseData['choices'][0]['message']['content'])) {
         log_info("成功从AI API ({$apiUrl}) 获取响应。");
-        return $responseData['choices'][0]['message']['content'];
+        $content = $responseData['choices'][0]['message']['content'];
+
+        // Attempt to strip Markdown code blocks like ```json ... ``` or ``` ... ```
+        // This regex looks for content between ```json (optional) and ```
+        // It handles optional language specifier (like json) and potential newlines after ```json
+        if (preg_match('/^```(?:json)?\s*(.*?)\s*```$/s', $content, $matches)) {
+            $jsonContent = $matches[1];
+            log_info("Stripped Markdown code block from AI response. Original length: " . strlen($content) . ", Stripped length: " . strlen($jsonContent));
+            return trim($jsonContent);
+        }
+        // Fallback for cases where it might just be ``` without language specifier
+        // This is largely covered by the above, but as a safety.
+        // else if (preg_match('/^```\s*(.*?)\s*```$/s', $content, $matches)) {
+        //     $jsonContent = $matches[1];
+        //     log_info("Stripped Markdown code block (no lang spec) from AI response.");
+        //     return trim($jsonContent);
+        // }
+        return $content; // Return original content if no Markdown block detected
     } elseif (isset($responseData['error']['message'])) {
         log_error("AI API ({$apiUrl}) 返回错误: " . $responseData['error']['message']);
         return null;
     } else {
-        log_warning("AI API ({$apiUrl}) 响应格式未知或不包含预期的内容。完整响应：" . $response);
+        log_warning("AI API ({$apiUrl}) 响应格式未知或不包含预期的内容。完整响应：" . $response); // $response here is the full HTTP response, not just content
         return null;
     }
 }
