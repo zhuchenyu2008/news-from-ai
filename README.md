@@ -87,6 +87,8 @@ mysql -u your_db_user -p your_db_name < database_setup.sql
 *   **Google Custom Search API 配置**:
     *   `GOOGLE_SEARCH_API_KEY`
     *   `GOOGLE_SEARCH_CX` (您的Programmable Search Engine ID)
+    *   (可选) `GOOGLE_SEARCH_SORT` 设置为 `date` 可按时间排序
+    *   (可选) `GOOGLE_SEARCH_DATE_RESTRICT` 例如 `d1` 仅搜索最近一天
 *   **用户新闻偏好**:
     *   `NEWS_KEYWORDS` (数组，定义您感兴趣的新闻主题)
 *   **RSS 源配置**:
@@ -177,7 +179,7 @@ RewriteRule ^ index.php [QSA,L]
 
 ## 🐛 日志与调试
 
-*   应用的主要日志输出到 `logs/app.log` 文件（路径可在 `config.php` 中配置）。
+*   应用的主要日志输出到 `logs/app.log` 文件（路径可在 `config/config.php` 中配置）。
 *   PHP错误日志（如果发生严重错误）通常位于Web服务器的错误日志文件或PHP-FPM的日志中。
 *   在开发或调试时，可以暂时在 `config/config.php` 中设置 `error_reporting(E_ALL)` 和 `ini_set('display_errors', 1)` 以在浏览器中显示PHP错误。**生产环境请关闭 `display_errors`**。
 

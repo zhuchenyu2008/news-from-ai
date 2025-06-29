@@ -39,6 +39,9 @@ define('NEWS_FORMAT_AI_PROMPT', "你是一个精通Markdown和HTML的前端内�
 // 用于AI联网搜索新闻
 define('GOOGLE_SEARCH_API_KEY', 'your_google_api_key_here');
 define('GOOGLE_SEARCH_CX', 'your_google_search_engine_id_here'); // Programmable Search Engine ID
+// 可选：按日期排序并限制搜索时间范围，例如 'date' 和 'd1' 表示按时间排序，只搜索最近一天的内容
+define('GOOGLE_SEARCH_SORT', 'date'); // 或留空使用默认相关性排序
+define('GOOGLE_SEARCH_DATE_RESTRICT', 'd1'); // d1=1天, w1=1周, m1=1个月等
 
 // --- 用户新闻偏好设置 ---
 // 用户想要看到的新闻方面/关键词，可以是数组

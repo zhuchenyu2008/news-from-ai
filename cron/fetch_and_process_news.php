@@ -181,7 +181,21 @@ if (defined('NEWS_KEYWORDS') && is_array(NEWS_KEYWORDS) && !empty(NEWS_KEYWORDS)
         $searchNumResults = defined('MAX_AI_NEWS_PER_KEYWORD') ? ((int)MAX_AI_NEWS_PER_KEYWORD * 2 + 2) : 6; // 多获取一些给AI筛选,至少为2，最多10
         $searchNumResults = max(2, min(10, $searchNumResults));
 
-        $searchResults = google_search(GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_CX, $keyword, $searchNumResults);
+        $options = [];
+        if (defined('GOOGLE_SEARCH_SORT') && GOOGLE_SEARCH_SORT) {
+            $options['sort'] = GOOGLE_SEARCH_SORT;
+        }
+        if (defined('GOOGLE_SEARCH_DATE_RESTRICT') && GOOGLE_SEARCH_DATE_RESTRICT) {
+            $options['dateRestrict'] = GOOGLE_SEARCH_DATE_RESTRICT;
+        }
+
+        $searchResults = google_search(
+            GOOGLE_SEARCH_API_KEY,
+            GOOGLE_SEARCH_CX,
+            $keyword,
+            $searchNumResults,
+            $options
+        );
 
         if ($searchResults === null) {
             log_warning("Google搜索API调用失败或配置错误 for keyword '{$keyword}'.");

@@ -182,10 +182,11 @@ function call_openai_api(
  * @param string $apiKey Google API密钥
  * @param string $cx Programmable Search Engine ID (cx)
  * @param string $query 搜索查询词
- * @param int $numResults 返回结果数量 (1-10)
+ * @param int   $numResults 返回结果数量 (1-10)
+ * @param array $options    其他查询参数，例如 ['sort' => 'date', 'dateRestrict' => 'd1']
  * @return array|null 搜索结果数组，或者在失败时返回null
  */
-function google_search(string $apiKey, string $cx, string $query, int $numResults = 5): ?array {
+function google_search(string $apiKey, string $cx, string $query, int $numResults = 5, array $options = []): ?array {
     log_debug("执行Google搜索: Query='{$query}', NumResults={$numResults}");
 
     if (empty($apiKey) || empty($cx)) {
@@ -193,15 +194,21 @@ function google_search(string $apiKey, string $cx, string $query, int $numResult
         return null;
     }
 
-    $apiUrl = "https://www.googleapis.com/customsearch/v1?" . http_build_query([
+    $params = [
         'key' => $apiKey,
-        'cx' => $cx,
-        'q' => $query,
+        'cx'  => $cx,
+        'q'   => $query,
         'num' => max(1, min(10, $numResults)), // API限制1-10
-        // 'safe' => 'active', // 可选：开启安全搜索
-        // 'lr' => 'lang_zh-CN', // 可选：限制搜索语言为简体中文
-        // 'sort' => 'date' // 可选：尝试按日期排序，但效果取决于搜索引擎的实现
-    ]);
+    ];
+
+    if (!empty($options['sort'])) {
+        $params['sort'] = $options['sort'];
+    }
+    if (!empty($options['dateRestrict'])) {
+        $params['dateRestrict'] = $options['dateRestrict'];
+    }
+
+    $apiUrl = "https://www.googleapis.com/customsearch/v1?" . http_build_query($params);
 
     $ch = curl_init($apiUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
