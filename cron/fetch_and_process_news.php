@@ -224,19 +224,25 @@ if (defined('NEWS_KEYWORDS') && is_array(NEWS_KEYWORDS) && !empty(NEWS_KEYWORDS)
         // If JSON decoding was successful, reset the failure counter
         $consecutiveJsonDecodeFailures = 0;
 
-        // Check the structure of the decoded JSON
-        if (isset($fetchedNewsList['news']) && is_array($fetchedNewsList['news'])) {
-            $fetchedNewsList = $fetchedNewsList['news']; // Common pattern: {"news": [...]}
-        } elseif (empty($fetchedNewsList) || !isset($fetchedNewsList[0]['title'])) {
-             // This case handles if the response is a direct list OR if it's malformed in structure
-             // (e.g., not an array of objects with a 'title' key)
-             log_warning("新闻获取AI返回的数据格式不符合预期 for keyword '{$keyword}'. Expected an array of news items (possibly under a 'news' key), each with a 'title'. Response (first 200 chars): " . mb_substr($fetchedNewsJson, 0, 200, 'UTF-8'));
-             // This is a content structure error, not strictly a JSON syntax error.
-             // We might not want to trigger the circuit breaker for this, or we might.
-             // For now, we'll continue to the next keyword without incrementing $consecutiveJsonDecodeFailures,
-             // as the JSON itself was valid. If this becomes a frequent issue, it might indicate a prompt problem.
-             continue;
+        // Check the structure of the decoded JSON to find the actual list of news articles
+        $actualNewsArticles = null;
+        if (isset($fetchedNewsList['news_list']) && is_array($fetchedNewsList['news_list'])) {
+            $actualNewsArticles = $fetchedNewsList['news_list'];
+            log_info("Found news items under 'news_list' key for keyword '{$keyword}'.");
+        } elseif (isset($fetchedNewsList['news']) && is_array($fetchedNewsList['news'])) {
+            $actualNewsArticles = $fetchedNewsList['news'];
+            log_info("Found news items under 'news' key for keyword '{$keyword}'.");
+        } elseif (is_array($fetchedNewsList) && !empty($fetchedNewsList) && isset($fetchedNewsList[0]['title'])) {
+            // Assume it's a direct list of news items
+            $actualNewsArticles = $fetchedNewsList;
+            log_info("Found news items as a direct list for keyword '{$keyword}'.");
+        } else {
+            log_warning("新闻获取AI返回的数据格式不符合预期 for keyword '{$keyword}'. Expected an array of news items (under 'news_list' or 'news' key, or as a direct list), each with a 'title'. Response snippet: " . mb_substr($fetchedNewsJson, 0, 300, 'UTF-8'));
+            // This is a content structure error, not strictly a JSON syntax error.
+            // Continue to the next keyword. The circuit breaker for JSON syntax errors is handled earlier.
+            continue;
         }
+        $fetchedNewsList = $actualNewsArticles; // Use the extracted list for further processing
 
         log_info("新闻获取AI为 '{$keyword}' 返回了 " . count($fetchedNewsList) . " 条初步新闻。");
         $aiNewsCounter = 0;

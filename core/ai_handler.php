@@ -149,12 +149,29 @@ function call_openai_api(
 
     if (isset($responseData['choices'][0]['message']['content'])) {
         log_info("成功从AI API ({$apiUrl}) 获取响应。");
-        return $responseData['choices'][0]['message']['content'];
+        $content = $responseData['choices'][0]['message']['content'];
+
+        // Attempt to strip Markdown code blocks like ```json ... ``` or ``` ... ```
+        // This regex looks for content between ```json (optional) and ```
+        // It handles optional language specifier (like json) and potential newlines after ```json
+        if (preg_match('/^```(?:json)?\s*(.*?)\s*```$/s', $content, $matches)) {
+            $jsonContent = $matches[1];
+            log_info("Stripped Markdown code block from AI response. Original length: " . strlen($content) . ", Stripped length: " . strlen($jsonContent));
+            return trim($jsonContent);
+        }
+        // Fallback for cases where it might just be ``` without language specifier
+        // This is largely covered by the above, but as a safety.
+        // else if (preg_match('/^```\s*(.*?)\s*```$/s', $content, $matches)) {
+        //     $jsonContent = $matches[1];
+        //     log_info("Stripped Markdown code block (no lang spec) from AI response.");
+        //     return trim($jsonContent);
+        // }
+        return $content; // Return original content if no Markdown block detected
     } elseif (isset($responseData['error']['message'])) {
         log_error("AI API ({$apiUrl}) 返回错误: " . $responseData['error']['message']);
         return null;
     } else {
-        log_warning("AI API ({$apiUrl}) 响应格式未知或不包含预期的内容。完整响应：" . $response);
+        log_warning("AI API ({$apiUrl}) 响应格式未知或不包含预期的内容。完整响应：" . $response); // $response here is the full HTTP response, not just content
         return null;
     }
 }
