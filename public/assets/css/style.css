@@ -1,0 +1,624 @@
+/* public/assets/css/style.css */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #fff; /* Default light theme background for container */
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5em;
+    color: #333; /* Default light theme header text */
+}
+header p {
+    font-size: 1em;
+    color: #666;
+    margin-top: 5px;
+}
+
+.theme-switcher {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    padding: 8px 12px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000; /* Ensure it's on top */
+}
+.theme-switcher:hover {
+    background-color: #e0e0e0;
+}
+
+
+.news-item {
+    background-color: #f9f9f9; /* Light theme item background */
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 6px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInSlideUp 0.5s ease-out forwards;
+}
+
+.news-item h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.8em;
+    color: #444; /* Light theme item title */
+}
+.news-item h2 a {
+    color: inherit;
+    text-decoration: none;
+}
+.news-item h2 a:hover {
+    text-decoration: underline;
+    color: #007bff;
+}
+
+
+.news-item .meta-info {
+    font-size: 0.85em;
+    color: #777; /* Light theme meta text */
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 15px; /* row-gap column-gap */
+}
+
+.news-item .meta-info span {
+    /* margin-right: 15px; -- replaced by gap */
+}
+.news-item .meta-info .category,
+.news-item .meta-info .type-rss,
+.news-item .meta-info .type-ai_generated { /* Match the type value */
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+.news-item .meta-info .category {
+    background-color: #e7f3ff;
+    color: #0056b3;
+}
+.news-item .meta-info .type-rss {
+    background-color: #d4edda;
+    color: #155724;
+}
+.news-item .meta-info .type-ai_generated { /* Match the type value */
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+
+.news-content {
+    margin-bottom: 20px;
+    word-wrap: break-word; /* Prevent long strings from breaking layout */
+}
+.news-content h3, .news-content h4, .news-content h5 { /* Styles for AI generated HTML headers */
+    color: #555;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+.news-content p {
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+.news-content ul, .news-content ol {
+    padding-left: 25px; /* More indentation */
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+.news-content li {
+    margin-bottom: 0.3em;
+}
+.news-content blockquote {
+    border-left: 3px solid #ccc;
+    padding-left: 15px;
+    margin-left: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    font-style: italic;
+    color: #666;
+}
+.news-content pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    font-size: 0.9em;
+}
+.news-content img { /* Basic responsive images */
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+.news-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+.news-content th, .news-content td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+.news-content th {
+    background-color: #f2f2f2;
+}
+
+
+.ai-comment {
+    background-color: #e9ecef; /* Light theme comment background */
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border-left: 4px solid #007bff; /* Accent for AI comment */
+}
+
+.ai-comment h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    color: #0056b3;
+}
+
+.source-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+.source-link a:hover {
+    text-decoration: underline;
+}
+
+/* Animation */
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Add delay for subsequent items for a staggered effect - applied via JS for more flexibility if needed */
+/* .news-item:nth-child(1) { animation-delay: 0.05s; } ... */
+
+
+/* Dark Theme */
+body.dark-theme {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+body.dark-theme .container {
+    background-color: #2c2c2c;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+body.dark-theme header h1 {
+    color: #f5f5f5;
+}
+body.dark-theme header p {
+    color: #aaa;
+}
+body.dark-theme header {
+    border-bottom: 1px solid #444;
+}
+
+body.dark-theme .theme-switcher {
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    color: #f0f0f0;
+}
+body.dark-theme .theme-switcher:hover {
+    background-color: #4a4a4a;
+}
+
+
+body.dark-theme .news-item {
+    background-color: #333;
+    border-color: #484848;
+}
+
+body.dark-theme .news-item h2 {
+    color: #e8e8e8;
+}
+body.dark-theme .news-item h2 a:hover {
+    color: #5dade2;
+}
+
+
+body.dark-theme .news-item .meta-info {
+    color: #bbb;
+}
+
+body.dark-theme .news-item .meta-info .category {
+    background-color: #003f7f;
+    color: #cce5ff;
+}
+body.dark-theme .news-item .meta-info .type-rss {
+    background-color: #0c3c18;
+    color: #c3e6cb;
+}
+body.dark-theme .news-item .meta-info .type-ai_generated {
+    background-color: #5a4503;
+    color: #ffeeba;
+}
+
+body.dark-theme .news-content {
+    color: #ccc;
+}
+body.dark-theme .news-content h3,
+body.dark-theme .news-content h4,
+body.dark-theme .news-content h5 {
+    color: #ddd;
+}
+body.dark-theme .news-content blockquote {
+    border-left-color: #777;
+    color: #aaa;
+}
+body.dark-theme .news-content pre {
+    background-color: #2a2a2a;
+    color: #eee;
+    border: 1px solid #444;
+}
+body.dark-theme .news-content table th,
+body.dark-theme .news-content table td {
+    border: 1px solid #555;
+}
+body.dark-theme .news-content table th {
+    background-color: #3a3a3a;
+}
+
+
+body.dark-theme .ai-comment {
+    background-color: #383c40;
+    border-left-color: #3498db;
+    color: #ddd;
+}
+
+body.dark-theme .ai-comment h4 {
+    color: #5dade2;
+}
+
+body.dark-theme .source-link a {
+    color: #5dade2;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 1px solid #eee;
+    font-size: 0.9em;
+    color: #777;
+}
+body.dark-theme footer {
+    border-top: 1px solid #444;
+    color: #aaa;
+}
+
+/* No news message */
+.no-news {
+    text-align: center;
+    padding: 50px 20px;
+    font-size: 1.2em;
+    color: #888;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+body.dark-theme .no-news {
+    color: #aaa;
+    background-color: #333;
+    border-color: #484848;
+}
+
+/* Pagination */
+.pagination {
+    text-align: center;
+    margin: 30px 0;
+    padding: 10px;
+}
+.pagination a, .pagination span {
+    margin: 0 5px;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #007bff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.pagination span {
+    color: #495057;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+.pagination a:hover {
+    text-decoration: none;
+    background-color: #f0f0f0;
+}
+body.dark-theme .pagination a {
+    color: #5dade2;
+    border-color: #555;
+}
+body.dark-theme .pagination span {
+    color: #ccc;
+    background-color: #3a3a3a;
+    border-color: #555;
+}
+body.dark-theme .pagination a:hover {
+    background-color: #4a4a4a;
+}
+
+/* For small screens */
+@media (max-width: 600px) {
+    .container {
+        margin: 10px;
+        padding: 10px;
+    }
+    header h1 {
+        font-size: 2em;
+    }
+    .news-item h2 {
+        font-size: 1.5em;
+    }
+    .news-item .meta-info {
+        font-size: 0.8em;
+    }
+    .theme-switcher {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+}
+```
+
+```javascript
+// public/assets/js/script.js
+document.addEventListener('DOMContentLoaded', () => {
+    const themeSwitcher = document.getElementById('themeSwitcher');
+    const body = document.body;
+
+    // Function to apply theme
+    const applyTheme = (theme) => {
+        if (theme === 'dark') {
+            body.classList.add('dark-theme');
+            if(themeSwitcher) themeSwitcher.textContent = '☀️ 日间模式';
+        } else {
+            body.classList.remove('dark-theme');
+            if(themeSwitcher) themeSwitcher.textContent = '🌙 夜间模式';
+        }
+    };
+
+    // Load saved theme from localStorage or detect system preference
+    let currentTheme = localStorage.getItem('theme');
+    if (!currentTheme) {
+        const hour = new Date().getHours();
+        currentTheme = (hour < 7 || hour >= 19) ? 'dark' : 'light'; // Dark from 7 PM to 7 AM (adjust as needed)
+    }
+    applyTheme(currentTheme);
+
+    // Theme switcher click event
+    if (themeSwitcher) {
+        themeSwitcher.addEventListener('click', () => {
+            let newTheme = body.classList.contains('dark-theme') ? 'light' : 'dark';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+
+    // Staggered animation for news items
+    const newsItems = document.querySelectorAll('.news-item');
+    newsItems.forEach((item, index) => {
+        // Ensure animation only runs once on load, not on theme switch or pagination
+        if (!item.classList.contains('animated')) {
+             item.style.animationDelay = `${index * 0.08}s`; // Faster stagger
+             item.classList.add('animated'); // Mark as animated
+        }
+    });
+});
+
+```
+
+```php
+<?php
+// public/index.php
+
+// --- 1. 加载必要文件 ---
+$baseDir = __DIR__ . '/..';
+require_once $baseDir . '/config/config.php';
+
+// 日志模块的加载可以根据需要，如果前端不需要记录特定日志，可以不加载
+// 但db_handler.php中使用了log_error等，所以还是需要logger.php能被包含
+// 或者在db_handler.php等核心库中做好函数存在性检查
+if (file_exists($baseDir . '/core/logger.php')) {
+    require_once $baseDir . '/core/logger.php';
+} else {
+    // Fallback basic logging if logger.php is missing
+    if (!function_exists('log_error')) { function log_error($msg) { error_log("ERROR: ".$msg); } }
+    if (!function_exists('log_info')) { function log_info($msg) { error_log("INFO: ".$msg); } }
+}
+require_once $baseDir . '/core/db_handler.php'; // 数据库操作
+
+// --- 2. 获取数据库连接 ---
+$db = get_db_connection();
+if (!$db) {
+    $error_message = "抱歉，新闻服务暂时不可用（无法连接数据库），请稍后再试。";
+    if (function_exists('log_error')) log_error("Index.php: 无法连接到数据库。");
+    // Display a user-friendly error page without dying immediately if possible
+    // For simplicity, we'll die here for now if DB is critical and unavailable.
+    // In a real app, you might render a proper error template.
+    // die($error_message);
+}
+
+// --- 3. 从数据库获取新闻 ---
+$newsPerPage = defined('NEWS_PER_PAGE') ? (int)NEWS_PER_PAGE : 10;
+$page = isset($_GET['page']) && filter_var($_GET['page'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $newsPerPage;
+
+$newsItems = [];
+$totalNews = 0;
+$databaseError = false;
+
+if ($db) { // Proceed only if DB connection was successful
+    try {
+        $totalStmt = $db->query("SELECT COUNT(*) FROM news");
+        if ($totalStmt) {
+            $totalNews = (int)$totalStmt->fetchColumn();
+        } else {
+            $databaseError = true;
+            if(function_exists('log_error')) log_error("无法获取总新闻数。");
+        }
+
+        if (!$databaseError) {
+            // 主要按fetched_at排序，确保新闻按真实发生时间排序，其次按ID（约等于入库时间）
+            $stmt = $db->prepare("SELECT * FROM news ORDER BY fetched_at DESC, id DESC LIMIT :limit OFFSET :offset");
+            $stmt->bindParam(':limit', $newsPerPage, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $newsItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+    } catch (PDOException $e) {
+        $databaseError = true;
+        if(function_exists('log_error')) log_error("从数据库获取新闻失败: " . $e->getMessage());
+        $newsItems = [];
+    }
+} else {
+    $databaseError = true; // DB connection failed earlier
+}
+
+$totalPages = $db && $totalNews > 0 ? ceil($totalNews / $newsPerPage) : 0;
+if ($page > $totalPages && $totalPages > 0) { // 如果请求的页面超过总页数，重定向到最后一页
+    header('Location: ?page=' . $totalPages);
+    exit;
+}
+
+
+?>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo defined('APP_NAME') ? htmlspecialchars(APP_NAME) : 'AI新闻聚合器'; ?></title>
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo filemtime($baseDir . '/public/assets/css/style.css'); // More robust cache busting ?>">
+    <meta name="description" content="AI驱动的新闻聚合器，为您带来最新、最相关的时事热点。">
+</head>
+<body>
+    <button id="themeSwitcher" class="theme-switcher" title="切换日间/夜间模式">🌙 夜间模式</button>
+
+    <div class="container">
+        <header>
+            <h1><?php echo defined('APP_NAME') ? htmlspecialchars(APP_NAME) : 'AI新闻聚合器'; ?></h1>
+            <p>由AI为您定时收集、解读和呈现时事热点</p>
+        </header>
+
+        <main>
+            <?php if ($databaseError): ?>
+                 <div class="no-news">
+                    <p>😢 糟糕，加载新闻时遇到问题。</p>
+                    <p>我们的工程师（AI）正在紧急处理，请稍后再试。</p>
+                </div>
+            <?php elseif (!empty($newsItems)): ?>
+                <?php foreach ($newsItems as $item): ?>
+                    <article class="news-item">
+                        <h2><a href="<?php echo htmlspecialchars($item['source_url']); ?>" target="_blank" rel="noopener noreferrer"><?php echo htmlspecialchars($item['title']); ?></a></h2>
+                        <div class="meta-info">
+                            <span>📅 <?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($item['fetched_at']))); ?></span>
+                            <?php if (!empty($item['category'])): ?>
+                                <span class="category"><?php echo htmlspecialchars($item['category']); ?></span>
+                            <?php endif; ?>
+                            <span class="type-<?php echo htmlspecialchars(str_replace('_', '-', $item['type'])); ?>"> <!-- ai_generated to ai-generated for CSS class -->
+                                <?php echo $item['type'] === 'rss' ? 'RSS源' : 'AI生成'; ?>
+                            </span>
+                            <?php if (!empty($item['source_name'])): ?>
+                                <span>📰 <?php echo htmlspecialchars($item['source_name']); ?></span>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="news-content">
+                            <?php
+                                // AI生成的HTML，应在生成时确保安全。
+                                // 如果担心，可以使用HTML Purifier等库进行清理。
+                                // echo html_purifier_purify($item['content_html']);
+                                echo $item['content_html'];
+                            ?>
+                        </div>
+
+                        <?php if (!empty($item['ai_comment'])): ?>
+                            <div class="ai-comment">
+                                <h4>🤖 AI解读与评论</h4>
+                                <p><?php echo nl2br(htmlspecialchars($item['ai_comment'])); ?></p>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="source-link">
+                            <a href="<?php echo htmlspecialchars($item['source_url']); ?>" target="_blank" rel="noopener noreferrer">查看原文 &raquo;</a>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+
+                <?php if ($totalPages > 1): ?>
+                    <nav class="pagination">
+                        <?php if ($page > 1): ?>
+                            <a href="?page=<?php echo $page - 1; ?>" title="上一页">&laquo; 上一页</a>
+                        <?php else: ?>
+                            <span style="color:#ccc; border-color:#eee; cursor:default;">&laquo; 上一页</span>
+                         <?php endif; ?>
+
+                        <span>第 <?php echo $page; ?> 页 / 共 <?php echo $totalPages; ?> 页</span>
+
+                        <?php if ($page < $totalPages): ?>
+                            <a href="?page=<?php echo $page + 1; ?>" title="下一页">下一页 &raquo;</a>
+                        <?php else: ?>
+                            <span style="color:#ccc; border-color:#eee; cursor:default;">下一页 &raquo;</span>
+                        <?php endif; ?>
+                    </nav>
+                <?php endif; ?>
+
+            <?php else: ?>
+                <div class="no-news">
+                    <p>😮 暂时还没有新闻哦，AI正在努力收集中...</p>
+                    <p>请稍后刷新页面，或检查定时任务是否已正确配置并运行。</p>
+                </div>
+            <?php endif; ?>
+        </main>
+
+        <footer>
+            <p>&copy; <?php echo date('Y'); ?> <?php echo defined('APP_NAME') ? htmlspecialchars(APP_NAME) : 'AI新闻聚合器'; ?>.</p>
+        </footer>
+    </div>
+
+    <script src="assets/js/script.js?v=<?php echo filemtime($baseDir . '/public/assets/js/script.js'); // Cache busting ?>"></script>
+</body>
+</html>
+
+```
