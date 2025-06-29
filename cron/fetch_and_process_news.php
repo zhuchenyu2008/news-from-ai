@@ -7,6 +7,11 @@ set_time_limit(0);
 // 增加内存限制，AI处理和大量文本操作可能需要更多内存
 ini_set('memory_limit', '512M'); // 增加到512M以防AI返回内容过大
 
+// Set internal encoding to UTF-8 for mbstring functions
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
+
 // --- 1. 加载核心文件 ---
 $baseDir = __DIR__ . '/..';
 require_once $baseDir . '/config/config.php';
@@ -81,9 +86,10 @@ function process_and_store_news_item(PDO $db_conn, array $newsItem): bool {
     $newsItem['ai_comment'] = $aiComment;
 
     // 2b. AI整理汇总成HTML
-    $defaultSummaryHtml = "<p><strong>摘要：</strong></p><p>" . nl2br(htmlspecialchars($newsItem['summary'] ?? $newsItem['raw_data_for_ai'])) . "</p>";
+    $summaryContent = $newsItem['summary'] ?? $newsItem['raw_data_for_ai'] ?? '无摘要';
+    $defaultSummaryHtml = "<p><strong>摘要：</strong></p><p>" . nl2br(htmlspecialchars($summaryContent, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . "</p>";
     if ($aiComment) {
-        $defaultSummaryHtml .= "<p><strong>AI评论：</strong></p><p>" . nl2br(htmlspecialchars($aiComment)) . "</p>";
+        $defaultSummaryHtml .= "<p><strong>AI评论：</strong></p><p>" . nl2br(htmlspecialchars($aiComment, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . "</p>";
     }
     $formattedHtmlContent = "<p>AI未能成功生成HTML内容。</p>" . $defaultSummaryHtml;
 
@@ -157,9 +163,21 @@ if (defined('NEWS_KEYWORDS') && is_array(NEWS_KEYWORDS) && !empty(NEWS_KEYWORDS)
     // shuffle($keywordsToProcess); // 每次随机打乱顺序
     // $keywordsToProcess = array_slice($keywordsToProcess, 0, $keywordsLimit);
 
+    $consecutiveJsonDecodeFailures = 0;
+    $maxConsecutiveJsonFailures = 3; // Max consecutive failures before pausing
+    $pauseDurationSeconds = 10 * 60; // 10 minutes
 
     foreach ($keywordsToProcess as $keyword) {
         log_info("处理关键词: {$keyword}");
+
+        // Check circuit breaker before processing keyword
+        if ($consecutiveJsonDecodeFailures >= $maxConsecutiveJsonFailures) {
+            log_warning("关键词处理熔断：连续 {$consecutiveJsonDecodeFailures} 次JSON解码失败。暂停 {$pauseDurationSeconds} 秒...");
+            sleep($pauseDurationSeconds);
+            $consecutiveJsonDecodeFailures = 0; // Reset counter after pause
+            log_info("暂停结束，继续处理关键词。");
+        }
+
         $searchNumResults = defined('MAX_AI_NEWS_PER_KEYWORD') ? ((int)MAX_AI_NEWS_PER_KEYWORD * 2 + 2) : 6; // 多获取一些给AI筛选,至少为2，最多10
         $searchNumResults = max(2, min(10, $searchNumResults));
 
@@ -186,7 +204,8 @@ if (defined('NEWS_KEYWORDS') && is_array(NEWS_KEYWORDS) && !empty(NEWS_KEYWORDS)
             NEWS_FETCH_AI_API_URL,
             NEWS_FETCH_AI_API_KEY,
             NEWS_FETCH_AI_MODEL,
-            $fetchPrompt
+            $fetchPrompt,
+            "Strictly output content that conforms to JSON schema. Do not include any other characters, comments, or Markdown formatting." // System Prompt
         );
 
         if (!$fetchedNewsJson) {
@@ -196,14 +215,26 @@ if (defined('NEWS_KEYWORDS') && is_array(NEWS_KEYWORDS) && !empty(NEWS_KEYWORDS)
 
         $fetchedNewsList = json_decode($fetchedNewsJson, true);
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($fetchedNewsList)) {
-            log_error("新闻获取AI返回的JSON无效 for keyword '{$keyword}'. Response (first 200 chars): " . substr($fetchedNewsJson,0,200));
+            // Use mb_substr for UTF-8 safe substring for logging
+            log_error("新闻获取AI返回的JSON无效 for keyword '{$keyword}'. Response (first 200 chars): " . mb_substr($fetchedNewsJson, 0, 200, 'UTF-8'));
+            // The detailed logging of the full raw response is now handled by core/ai_handler.php
+            $consecutiveJsonDecodeFailures++;
             continue;
         }
+        // If JSON decoding was successful, reset the failure counter
+        $consecutiveJsonDecodeFailures = 0;
 
+        // Check the structure of the decoded JSON
         if (isset($fetchedNewsList['news']) && is_array($fetchedNewsList['news'])) {
-            $fetchedNewsList = $fetchedNewsList['news'];
+            $fetchedNewsList = $fetchedNewsList['news']; // Common pattern: {"news": [...]}
         } elseif (empty($fetchedNewsList) || !isset($fetchedNewsList[0]['title'])) {
-             log_error("新闻获取AI返回的数据格式不符合预期。Response (first 200 chars): " . substr($fetchedNewsJson,0,200));
+             // This case handles if the response is a direct list OR if it's malformed in structure
+             // (e.g., not an array of objects with a 'title' key)
+             log_warning("新闻获取AI返回的数据格式不符合预期 for keyword '{$keyword}'. Expected an array of news items (possibly under a 'news' key), each with a 'title'. Response (first 200 chars): " . mb_substr($fetchedNewsJson, 0, 200, 'UTF-8'));
+             // This is a content structure error, not strictly a JSON syntax error.
+             // We might not want to trigger the circuit breaker for this, or we might.
+             // For now, we'll continue to the next keyword without incrementing $consecutiveJsonDecodeFailures,
+             // as the JSON itself was valid. If this becomes a frequent issue, it might indicate a prompt problem.
              continue;
         }
 
